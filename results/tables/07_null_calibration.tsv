@@ -1,0 +1,7 @@
+metric	value
+ntc_elements_tested	20.0
+ntc_p_perm_below_0.05	0.0
+ntc_q_perm_below_0.1	0.0
+ntc_median_p_perm	0.43728135932033985
+ntc_glm_p_below_0.05	0.0
+ntc_median_glm_p	0.41590089976863487

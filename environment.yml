@@ -1,0 +1,27 @@
+name: perturbseq-cov2
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python=3.13
+  - numpy>=2.0
+  - pandas>=2.2
+  - scipy>=1.14
+  - h5py>=3.11
+  - scanpy>=1.11
+  - anndata>=0.11
+  - statsmodels>=0.14
+  - scikit-learn>=1.5
+  - matplotlib>=3.9
+  - curl
+  - pip
+# Versions this analysis was last run with:
+#   python 3.13.18, numpy 2.5.3, pandas 3.0.5, scipy 1.18.1, h5py 3.16.0,
+#   scanpy 1.12.5, anndata 0.13.4, statsmodels 0.15.0, scikit-learn 1.9.1,
+#   matplotlib 3.11.2
+#
+# Every random draw in the pipeline is seeded (numpy default_rng(0), and
+# random_state=0 for the mixture and for scanpy's score_genes), so the tables in
+# results/ are reproducible on a fixed set of versions. Permutation p-values are
+# resolution-limited at 1/2001 and the hit sets, not the exact p-values at the
+# floor, are what should be compared across environments.

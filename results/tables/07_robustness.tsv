@@ -1,0 +1,5 @@
+metric	value
+effect_size_correlation_between_classifiers	0.9860670279341527
+significant_under_both	18.0
+significant_under_either	30.0
+jaccard	0.6

@@ -1,0 +1,9 @@
+metric	value
+element_gene_pairs_tested	228.0
+pairs_with_20plus_bystander_cells	197.0
+median_knockdown_pseudobulk	0.8841250163127381
+median_knockdown_mean_of_cpm	0.9097821796107879
+frac_above_50pct_kd	0.868020304568528
+frac_above_75pct_kd	0.7563451776649747
+frac_above_90pct_kd	0.45685279187817257
+n_negative_kd	4.0

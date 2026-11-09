@@ -40,9 +40,23 @@ own script:
 
 ![Figure 4](results/figures/fig4_concordance.png)
 
-Every published call lands in the right direction. The 14 reported hits are
-significant at q < 0.05 and the 7 reported non-hits are not significant, with the
-largest of them (EIF4B, q = 0.12) still short of the threshold.
+**How to read this.** Bar colour is what the *paper* claims; fill is what *we*
+call. "Reproduced" means our call agrees with the paper's, and that includes
+agreeing that a target has no effect — so the seven grey bars are reproductions
+too, not failures.
+
+The cutoff for calling an effect is **q < 0.1**, Benjamini-Hochberg across the 184
+elements tested for this phenotype, on permutation p-values. Nothing else is a
+threshold: bar length on its own is not a claim, which is why the targets we call
+null are drawn hollow however long their bar is.
+
+On that cutoff the 14 reported hits all clear q < 0.05 and the 7 reported non-hits
+all fail it. The closest call is EIF4B: a 1.66× increase in infection odds on 111
+cells, with a raw permutation p of 0.02 that becomes q = 0.12 once corrected across
+184 elements. So it is the multiple-testing correction, not the test, that makes it
+null — which is the honest way to describe it, and the one target here where a
+larger screen could plausibly change the answer. It still agrees with the paper,
+which also reports no effect.
 
 ### Infection calling, and what it rests on
 

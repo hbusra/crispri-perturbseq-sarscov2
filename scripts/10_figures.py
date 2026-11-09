@@ -286,27 +286,47 @@ def figure4():
     colors = [BLUE if d == "down" else RED if d == "up" else NEUTRAL
               for d in con.paper_direction]
 
-    fig, ax = plt.subplots(figsize=(6.4, 5.6))
+    # Fill carries OUR call, colour carries the paper's claim:
+    #   solid bar  = we call an effect (q < 0.1)
+    #   hollow bar = we do not
+    # So a hollow grey bar, however long, is a target both we and the paper call
+    # null: bar length alone is not a claim.
+    called = (con.infection_q < 0.1).to_numpy()
+
+    fig, ax = plt.subplots(figsize=(6.8, 5.8))
     ax.axvline(0, color="#c9c8c3", linewidth=0.9, zorder=1)
-    ax.barh(y, con.infection_log_or, color=colors, height=0.6, zorder=2,
-            linewidth=0)
+    ax.barh(y, con.infection_log_or,
+            color=[c if k else "none" for c, k in zip(colors, called)],
+            edgecolor=colors, linewidth=1.1, height=0.6, zorder=2)
     for i, (_, r) in enumerate(con.iterrows()):
-        mark = "reproduced" if r.agrees else "discrepant"
-        off = 0.06 if r.infection_log_or >= 0 else -0.06
-        ha = "left" if r.infection_log_or >= 0 else "right"
-        ax.text(r.infection_log_or + off, i, f"q={r.infection_q:.3f}  {mark}",
-                va="center", ha=ha, fontsize=6.6, color=INK2)
+        our = {"down": "we call: less infection",
+               "up": "we call: more infection",
+               "ns": "we call: no effect"}[r.infection_called]
+        tick = "matches" if r.agrees else "DISAGREES"
+        # every label sits in the empty right half, so nothing collides with a
+        # bar or with the target names on the left
+        xpos = max(r.infection_log_or, 0) + 0.08
+        ax.text(xpos, i, f"q={r.infection_q:.3f}   {our} — {tick}",
+                va="center", ha="left", fontsize=6.4, color=INK2)
     ax.set_yticks(y)
     ax.set_yticklabels(con.target, fontsize=7.2)
     style(ax, grid_axis="x")
     ax.set_xlabel("our lane-stratified log odds ratio vs NTC")
-    ax.set_xlim(-3.15, 1.95)
+    ax.set_xlim(-2.2, 3.3)
     n_ok = int(con.agrees.sum())
     ax.set_title(
         f"Figure 4   All {n_ok} of {len(con)} published calls reproduced\n"
-        "blue = paper reports less viral RNA, red = more, grey = paper reports no effect",
-        loc="left", fontsize=10,
+        "colour = what the paper reports (blue less viral RNA, red more, grey no effect).\n"
+        "filled = we call an effect at q < 0.1; hollow = we do not.",
+        loc="left", fontsize=9.5,
     )
+    ax.legend(handles=[
+        Line2D([], [], marker="s", color=INK2, linestyle="", markersize=6,
+               label="filled: significant for us (q < 0.1)"),
+        Line2D([], [], marker="s", markerfacecolor="none", markeredgecolor=INK2,
+               color=INK2, linestyle="", markersize=6,
+               label="hollow: not significant for us"),
+    ], loc="upper right", bbox_to_anchor=(1.0, -0.085), ncol=2, fontsize=6.8)
     fig.tight_layout()
     fig.savefig(fig_path("fig4_concordance.png"))
     plt.close(fig)

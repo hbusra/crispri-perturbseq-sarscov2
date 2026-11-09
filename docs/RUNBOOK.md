@@ -90,14 +90,19 @@ is why host UMI is the offset everywhere downstream.
 
 **03_infection** — 705 ambient-reference cells; mixture modes at viral fraction
 0.0023 and 0.100 with a crossover at 0.0088; 29.2% infected, 61.1% bystander, 9.7%
-borderline. The three classifiers agree at 99.3% or better. Downsampling the whole
+borderline. The three threshold-free classifiers agree at 99.3% or better; the paper's
+literal mean + 2 SD rule calls only 6.2% infected on the reconstructable
+reference and is reported as a documented limitation of that reference. Downsampling the whole
 library to a tenth changes 0.45% of calls.
 
 **04_guide_qc** — 177 of 181 target genes present in the reference (ADCK4,
 C18orf8, TCEB1, TCEB2 are absent under those symbols). Median knockdown 88%, 76% of
-element–gene pairs above 75%. 41 genes have two independent elements and their
-knockdown estimates correlate at r = 0.74. Four element–gene pairs have negative
-knockdown; FURIN is the one that matters.
+element–gene pairs above 75%. Construct concordance is reported by pair type: the
+12 genes carried by two separately cloned single-guide vectors agree at r = 0.55
+(Spearman 0.36, median |difference| 0.148), the 24 single-vs-combination pairs at
+r = 0.55, and the 5 genes in three or more elements at r = 0.97. Only the first is
+quoted. Four element–gene pairs have negative knockdown; FURIN is the one that
+matters.
 
 **05_viral_load** — NTC baseline infected fraction 0.347. The paper's 14 hits
 occupy ranks 5–33 of 237 in the expected direction, SEC62 rank 231, and its 7
@@ -105,15 +110,18 @@ reported non-hits land between ranks 79 and 221.
 
 **06_isg** — 55 of 55 ISGs present; 12 of them are also library targets and are
 dropped from the clean score. Bystander mean ISG 2.41 against 1.04 in infected
-cells. 23 of 170 elements significant at q < 0.1.
+cells. 21 of 170 targeting elements significant at q < 0.1.
 
-**07_hit_calling** — 184 elements testable for infection, 30 significant at
-q < 0.1. MH and logistic-GLM effect sizes agree at r = 0.9999. NB dispersion
-α = 1.66. **21 of 21 published calls reproduced.** Zero of the 22 non-targeting
-elements are significant.
+**07_hit_calling** — 184 elements testable for infection (164 targeting + 20
+non-targeting); BH runs over the 164 targeting elements and 30 are significant at
+q < 0.1. Burden: 149 targeting elements, 5 significant. MH and logistic-GLM effect
+sizes agree at r = 0.9999. NB dispersion α = 1.66. **21 of 21 published calls
+reproduced.** Zero of the 20 testable non-targeting elements reach p < 0.1 for
+infection establishment (median p = 0.44). Offset sensitivity: Spearman 0.967 vs
+detected-gene count, 0.870 vs total UMI, 0.559 for depth-banding with no offset.
 
-**08_representation** — smallest detectable odds ratio 2.42× at 25 cells, 1.75× at
-60, 1.31× at 240. 73 of 237 elements fail at least one phenotype's coverage
+**08_representation** — smallest detectable odds ratio 2.42× at 25 cells, 1.73× at
+60, 1.39× at 160, 1.31× at 240. 73 of 237 elements fail at least one phenotype's coverage
 requirement.
 
 **09_infected_vs_bystander** — 133 elements have ≥ 25 cells in both states.
@@ -121,6 +129,8 @@ Program-level effect correlations between states: ISG 0.74, MHC-I 0.54, NF-κB 0
 unfolded protein 0.20.
 
 **10_figures** — seven PNGs in `results/figures/`.
+
+**pytest** — `python -m pytest tests -q`: 12 estimator tests, ~10 s.
 
 ## 4. Runtime
 

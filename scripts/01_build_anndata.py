@@ -32,7 +32,7 @@ Design notes
   `element` distinct lets script 07 use them as an internal reproducibility
   check.
 * `gem_group` (1-8) is the 10x channel: a real blocking variable, carried into
-  every model and every permutation downstream.
+  every model and every control-based null downstream.
 """
 from __future__ import annotations
 

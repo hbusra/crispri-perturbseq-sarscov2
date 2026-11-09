@@ -1,4 +1,4 @@
-target	score	element	paper	n_bystander	delta_isg	q_perm	rank	n_tested
+target	score	element	paper	n_bystander	delta_isg	q_null	rank	n_tested
 GPR89A	isg	CRISPRi_162_GPR89A	down	58	-1.8485461972700483	0.005934532733633183	9	170
 GPR89A	isg_clean	CRISPRi_162_GPR89A	down	58	-1.901578474005728	0.005934532733633183	8	170
 GPR89B	isg	CRISPRi_163_GPR89B	down	84	0.027189950562843263	0.9244434386580296	118	170

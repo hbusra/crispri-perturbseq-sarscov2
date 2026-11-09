@@ -50,13 +50,13 @@ def main() -> None:
     # ones: a subsampling curve built only on ACE2-sized effects says nothing
     # about the elements whose detection is actually marginal.
     hits = C.read_tbl("07_hits_infection.tsv")
-    sig = hits[(~hits.is_ntc) & (hits.q_perm < 0.1)].copy()
+    sig = hits[(~hits.is_ntc) & (hits.q_null < 0.1)].copy()
     sig["abs_eff"] = sig.log_or_mh.abs()
     sig = sig.sort_values("abs_eff")
     picks = np.unique(np.linspace(0, len(sig) - 1, 8).round().astype(int))
     strong = sig.iloc[picks]
     print("elements used for the subsampling curve (weakest to strongest):")
-    print(strong[["target", "n_cells", "log_or_mh", "q_perm"]].round(3).to_string(index=False))
+    print(strong[["target", "n_cells", "log_or_mh", "q_null"]].round(3).to_string(index=False))
 
     # ---------------------------------------- subsample real cells of real hits
     rows = []

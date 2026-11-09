@@ -135,19 +135,19 @@ def main() -> None:
                     delta_isg=obs,
                     null_sd=sd,
                     z_empirical=obs / sd if sd > 0 else np.nan,
-                    p_perm=(1 + int(np.sum(np.abs(null) >= abs(obs)))) / (B_DRAWS + 1),
+                    p_null=(1 + int(np.sum(np.abs(null) >= abs(obs)))) / (B_DRAWS + 1),
                 )
             )
     out = pd.DataFrame(rows)
-    out["q_perm"] = np.nan
+    out["q_null"] = np.nan
     for sc_name, idx in out.groupby("score").groups.items():
-        out.loc[idx, "q_perm"] = C.bh_fdr(out.loc[idx, "p_perm"].to_numpy())
+        out.loc[idx, "q_null"] = C.bh_fdr(out.loc[idx, "p_null"].to_numpy())
     out = out.sort_values(["score", "delta_isg"])
     out.to_csv(C.tbl("06_isg_by_element.tsv"), sep="\t", index=False)
 
     main_tab = out[out.score == "isg_clean"]
     tested = main_tab[~main_tab.is_ntc]
-    sig = tested[tested.q_perm < 0.1]
+    sig = tested[tested.q_null < 0.1]
     print(
         f"\nbystander ISG, target-free score: {len(tested)} elements tested, "
         f"{len(sig)} at q<0.1 ({int((sig.delta_isg < 0).sum())} down, "
@@ -156,13 +156,13 @@ def main() -> None:
     print("\nlargest decreases:")
     print(
         tested.nsmallest(15, "delta_isg")[
-            ["element", "target", "n_bystander", "delta_isg", "z_empirical", "q_perm"]
+            ["element", "target", "n_bystander", "delta_isg", "z_empirical", "q_null"]
         ].round(4).to_string(index=False)
     )
     print("\nlargest increases:")
     print(
         tested.nlargest(8, "delta_isg")[
-            ["element", "target", "n_bystander", "delta_isg", "z_empirical", "q_perm"]
+            ["element", "target", "n_bystander", "delta_isg", "z_empirical", "q_null"]
         ].round(4).to_string(index=False)
     )
     sig.to_csv(C.tbl("06_isg_hits.tsv"), sep="\t", index=False)
@@ -185,7 +185,7 @@ def main() -> None:
                         paper=("down" if tgt in PAPER_ISG_DOWN else "pathway group"),
                         n_bystander=int(r.n_bystander),
                         delta_isg=r.delta_isg,
-                        q_perm=r.q_perm,
+                        q_null=r.q_null,
                         rank=int((n.delta_isg < r.delta_isg).sum() + 1),
                         n_tested=len(n),
                     )

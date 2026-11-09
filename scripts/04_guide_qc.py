@@ -164,23 +164,91 @@ def main() -> None:
         ].round(3).to_string(index=False)
     )
 
-    # internal reproducibility: two independent elements for the same gene
-    rep = bb[bb.has_second_element == True].copy()  # noqa: E712
-    rep["slot"] = rep.groupby("target_gene").cumcount()
-    piv = (
-        rep[rep.slot < 2]
-        .pivot(index="target_gene", columns="slot", values="kd_pseudobulk")
-        .rename(columns={0: "element_A", 1: "element_B"})
-        .dropna()
+    # ------------------------------------------- construct concordance
+    # Two elements hitting the same gene are NOT automatically two independent
+    # constructs, and conflating the two categories inflates the concordance.
+    # The library gives two genuinely different situations:
+    #
+    #   independent_vectors   elements 216-239: 24 separately cloned
+    #                         single-guide vectors covering 12 genes, two each.
+    #                         These are independent constructs: different guide
+    #                         sequences, separate clones. This is the honest
+    #                         reagent-reproducibility panel.
+    #   single_vs_combination a single-gene element and a two-gene combination
+    #                         element that contains the same gene (e.g.
+    #                         CRISPRi_001_ACE2 vs CRISPRi_172_ACE2_TMPRSS2).
+    #                         These typically share guide design for the shared
+    #                         gene, so agreement between them is a weaker claim
+    #                         and partly measures the same reagent twice.
+    #
+    # Both are reported, separately and labelled. The repository quotes the
+    # 12-gene independent-vector number as the reproducibility figure.
+    bb = bb.copy()
+    bb["element_number"] = bb.element.str.split("_").str[1].astype(int)
+    bb["element_is_combination"] = bb.element.map(
+        lambda e: "+" in el.set_index("element").target.get(e, "")
     )
-    if len(piv) > 2:
-        r = float(np.corrcoef(piv.element_A, piv.element_B)[0, 1])
-        print(
-            f"\ngenes with two independent elements (n={len(piv)}): knockdown "
-            f"correlation between the two elements r = {r:.3f}"
+
+    pair_rows = []
+    for gene, sub in bb.groupby("target_gene"):
+        if sub.target_gene.count() < 2:
+            continue
+        sub = sub.sort_values("element_number")
+        if len(sub) != 2:
+            kind = "more_than_two_elements"
+        elif sub.element_number.between(216, 239).all() and not sub.element_is_combination.any():
+            kind = "independent_vectors"
+        elif sub.element_is_combination.any():
+            kind = "single_vs_combination"
+        else:
+            kind = "two_single_gene_elements"
+        pair_rows.append(
+            dict(
+                target_gene=gene,
+                pair_type=kind,
+                element_A=sub.element.iloc[0],
+                element_B=sub.element.iloc[1],
+                kd_A=sub.kd_pseudobulk.iloc[0],
+                kd_B=sub.kd_pseudobulk.iloc[1],
+                n_cells_A=int(sub.n_cells.iloc[0]),
+                n_cells_B=int(sub.n_cells.iloc[1]),
+                abs_difference=abs(sub.kd_pseudobulk.iloc[0] - sub.kd_pseudobulk.iloc[1]),
+            )
         )
-        print(piv.round(3).to_string())
-        piv.to_csv(C.tbl("04_knockdown_two_elements.tsv"), sep="\t")
+    pairs = pd.DataFrame(pair_rows)
+    pairs.to_csv(C.tbl("04_construct_concordance.tsv"), sep="\t", index=False)
+
+    print("\nconstruct concordance, by what the two elements actually are:")
+    summary_rows = []
+    for kind, sub in pairs.groupby("pair_type"):
+        if len(sub) < 3:
+            print(f"  {kind}: n={len(sub)} (too few to correlate)")
+            continue
+        r = float(np.corrcoef(sub.kd_A, sub.kd_B)[0, 1])
+        rho = float(sub.kd_A.corr(sub.kd_B, method="spearman"))
+        print(
+            f"  {kind}: n={len(sub)}  Pearson r={r:.3f}  Spearman rho={rho:.3f}  "
+            f"median |difference| = {sub.abs_difference.median():.3f}"
+        )
+        summary_rows.append(dict(pair_type=kind, n_genes=len(sub), pearson_r=r,
+                                 spearman_rho=rho,
+                                 median_abs_difference=float(sub.abs_difference.median())))
+    pd.DataFrame(summary_rows).to_csv(
+        C.tbl("04_construct_concordance_summary.tsv"), sep="\t", index=False)
+
+    indep = pairs[pairs.pair_type == "independent_vectors"]
+    print(
+        f"\nthe reproducibility panel: {len(indep)} genes carried by two separately "
+        "cloned single-guide vectors (library elements 216-239)"
+    )
+    print(indep[["target_gene", "element_A", "element_B", "kd_A", "kd_B",
+                 "abs_difference"]].round(3).to_string(index=False))
+    print(
+        "\nPooling all pair types into one correlation inflates it: the genes "
+        "appearing in three or more elements agree almost perfectly with each other "
+        "and drag the pooled number up. Only the independent-vector row is a "
+        "reagent-to-reagent comparison, and it is the one quoted."
+    )
 
     # ----------------------------------------------------- representation
     rep_tbl = (

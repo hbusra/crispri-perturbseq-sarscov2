@@ -157,7 +157,7 @@ def figure1():
 def figure2():
     kd = C.read_tbl("04_knockdown.tsv")
     b = kd[(kd.population == "bystander") & kd.kd_pseudobulk.notna() & (kd.n_cells >= 20)]
-    two = pd.read_csv(C.TABLES / "04_knockdown_two_elements.tsv", sep="\t", index_col=0)
+    con = C.read_tbl("04_construct_concordance.tsv")
 
     fig, axes = plt.subplots(1, 2, figsize=(7.6, 3.1))
 
@@ -173,21 +173,28 @@ def figure2():
     ax.set_title(f"a   Median {b.kd_pseudobulk.median()*100:.0f}% knockdown", loc="left")
 
     ax = axes[1]
-    r = float(np.corrcoef(two.element_A, two.element_B)[0, 1])
+    indep = con[con.pair_type == "independent_vectors"]
+    other = con[con.pair_type != "independent_vectors"]
+    r = float(np.corrcoef(indep.kd_A, indep.kd_B)[0, 1])
     ax.axhline(0, color=GRID, linewidth=0.8)
     ax.axvline(0, color=GRID, linewidth=0.8)
     ax.plot([-0.3, 1.05], [-0.3, 1.05], color=NEUTRAL, linewidth=1.0,
             linestyle=(0, (4, 3)), zorder=1)
-    ax.scatter(two.element_A * 100, two.element_B * 100, s=26, color=AQUA,
-               edgecolor="white", linewidth=0.8, zorder=3)
-    for g in ("FURIN", "ACE2", "BRD2", "VAC14"):
-        if g in two.index:
-            ax.annotate(g, (two.loc[g, "element_A"] * 100, two.loc[g, "element_B"] * 100),
+    ax.scatter(other.kd_A * 100, other.kd_B * 100, s=20, facecolor="none",
+               edgecolor="#b5b4ad", linewidth=0.9, zorder=2,
+               label="shared-guide pairs (not independent)")
+    ax.scatter(indep.kd_A * 100, indep.kd_B * 100, s=30, color=AQUA,
+               edgecolor="white", linewidth=0.8, zorder=3,
+               label=f"independent vectors (n = {len(indep)})")
+    for _, row in indep.iterrows():
+        if row.target_gene in ("FURIN", "ACE2", "BRD2", "VAC14", "MEPCE", "LARP1"):
+            ax.annotate(row.target_gene, (row.kd_A * 100, row.kd_B * 100),
                         textcoords="offset points", xytext=(5, -2), fontsize=7, color=INK)
     style(ax, grid_axis="both")
-    ax.set_xlabel("knockdown, element A (%)")
-    ax.set_ylabel("knockdown, element B (%)")
-    ax.set_title(f"b   Two independent elements per gene agree (r = {r:.2f})", loc="left")
+    ax.legend(frameon=False, fontsize=6.6, loc="upper left", handletextpad=0.4)
+    ax.set_xlabel("knockdown, vector A (%)")
+    ax.set_ylabel("knockdown, vector B (%)")
+    ax.set_title(f"b   Separately cloned vectors agree at r = {r:.2f}", loc="left")
 
     fig.suptitle("Figure 2   The screen's internal positive control",
                  x=0.005, ha="left", fontsize=11, fontweight="semibold")
@@ -201,7 +208,7 @@ def figure2():
 def figure3():
     A = C.read_tbl("07_hits_infection.tsv")
     A = A.sort_values("log_or_mh").reset_index(drop=True)
-    sig = (A.q_perm < 0.1) & (~A.is_ntc)
+    sig = (A.q_null < 0.1) & (~A.is_ntc)
 
     fig, axes = plt.subplots(1, 2, figsize=(7.9, 3.6),
                              gridspec_kw={"width_ratios": [1.25, 1]})
@@ -242,7 +249,7 @@ def figure3():
 
     # (b) effect vs significance
     ax = axes[1]
-    nl = -np.log10(A.p_perm.clip(lower=1e-4))
+    nl = -np.log10(A.p_null.clip(lower=1e-4))
     ax.scatter(A.log_or_mh[~sig & ~A.is_ntc], nl[~sig & ~A.is_ntc], s=16,
                color="#cfced8", edgecolor="white", linewidth=0.4, zorder=2)
     ax.scatter(A.log_or_mh[A.is_ntc], nl[A.is_ntc], s=24, color=INK2, marker="D", zorder=3)
@@ -261,12 +268,12 @@ def figure3():
     ax.axvline(0, color=GRID, linewidth=0.8)
     ax.set_ylim(-0.15, 4.0)
     ax.set_xlabel("lane-stratified log odds ratio vs NTC")
-    ax.set_ylabel("$-$log$_{10}$ permutation p")
+    ax.set_ylabel("$-$log$_{10}$ control-based p")
     ax.set_title("b   Effect size against the NTC null", loc="left")
-    ax.annotate(f"ceiling at p = 1/{B_LABEL}, the\nresolution of the permutation null",
+    ax.annotate(f"ceiling at p = 1/{B_LABEL}, the\nresolution of the control-based null",
                 xy=(0.03, 0.99), xycoords="axes fraction", va="top",
                 fontsize=6.6, color=INK2)
-    ax.annotate("22 non-targeting elements (diamonds)\nsit at the origin: the null is calibrated",
+    ax.annotate(f"the {int(A.is_ntc.sum())} non-targeting elements (diamonds)\nsit at the origin: the null is calibrated",
                 xy=(0.5, 0.26), xycoords="axes fraction", ha="center",
                 fontsize=6.6, color=INK2)
 
@@ -337,7 +344,7 @@ def figure4():
 def figure5():
     isg = C.read_tbl("06_isg_by_element.tsv")
     isg = isg[isg.score == "isg_clean"].sort_values("delta_isg").reset_index(drop=True)
-    sig = (isg.q_perm < 0.1) & (~isg.is_ntc)
+    sig = (isg.q_null < 0.1) & (~isg.is_ntc)
 
     fig, axes = plt.subplots(1, 2, figsize=(7.9, 3.5),
                              gridspec_kw={"width_ratios": [1.3, 1]})

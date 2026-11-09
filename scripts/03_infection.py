@@ -143,8 +143,22 @@ def main() -> None:
     cut = info["antimode_viral_frac"]
     state_fix = np.where(obs.viral_frac.fillna(0) > cut, "infected", "uninfected")
 
+    # 4. the published rule, implemented literally: per viral gene, infected if
+    #    the count clears both an absolute floor of 6 and mean + 2 SD of the
+    #    reference. Included to document why it is not used: the reference set
+    #    that can be rebuilt from the deposited data is contaminated by real
+    #    library cells whose guide was not captured, so its SD is enormous
+    #    (SCV_N: mean 966, SD 2487) and the threshold lands above almost every
+    #    cell. This is a limitation of the reference we can reconstruct, not a
+    #    claim that the published rule is wrong -- the authors had the true
+    #    spike-in identity and we do not.
+    thr_literal = np.maximum(MIN_COUNT, bg.mean_ref + 2 * bg.sd_ref).to_numpy()
+    state_lit = np.where((obs[vcols].to_numpy() >= thr_literal[None, :]).any(axis=1),
+                         "infected", "uninfected")
+
     obs = obs.assign(state=state_mix, p_infected=post_all.to_numpy(),
-                     state_ambient=state_amb, state_fixed=state_fix)
+                     state_ambient=state_amb, state_fixed=state_fix,
+                     state_paper_literal=state_lit)
     asg = obs[asg_mask]
 
     # ------------------------------------------------------------ concordance
@@ -162,6 +176,11 @@ def main() -> None:
                  infected_frac=float((asg.state_fixed == "infected").mean()),
                  borderline_frac=0.0,
                  ref_called_infected=float((obs.loc[ref.index, "state_fixed"] == "infected").mean())),
+            dict(rule="published rule, literal (mean + 2 SD of reference)",
+                 infected_frac=float((asg.state_paper_literal == "infected").mean()),
+                 borderline_frac=0.0,
+                 ref_called_infected=float(
+                     (obs.loc[ref.index, "state_paper_literal"] == "infected").mean())),
         ]
     )
     # pairwise agreement on the non-borderline cells
@@ -170,14 +189,15 @@ def main() -> None:
         1.0,
         float((nb.state_ambient == nb.state).mean()),
         float((nb.state_fixed == nb.state).mean()),
+        float((nb.state_paper_literal == nb.state).mean()),
     ]
     agree.to_csv(C.tbl("03_classifier_agreement.tsv"), sep="\t", index=False)
     print("\nclassifier comparison (assigned cells):\n", agree.round(4).to_string(index=False))
 
     # ---------------------------------------------------------- state exports
     out = asg[["element", "target", "is_ntc", "gem_group", "state", "p_infected",
-               "state_ambient", "state_fixed", "host_umi", "total_umi", "viral_umi",
-               "viral_frac", "n_genes", "pct_mito"]].copy()
+               "state_ambient", "state_fixed", "state_paper_literal", "host_umi",
+               "total_umi", "viral_umi", "viral_frac", "n_genes", "pct_mito"]].copy()
     out.index.name = "cell_barcode"
     out.to_csv(C.tbl("03_cell_state.tsv.gz"), sep="\t", compression="gzip")
 

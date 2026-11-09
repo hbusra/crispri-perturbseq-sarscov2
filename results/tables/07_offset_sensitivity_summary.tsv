@@ -1,0 +1,4 @@
+specification	n_elements_compared	spearman_vs_host_umi	pearson_vs_host_umi	top20_overlap
+n_genes	170	0.9672449484309452	0.9725565909018796	16
+total_umi	170	0.8703500833531793	0.901044595210067	13
+depth_band_no_offset	88	0.5593497939487867	0.5379052463777712	3

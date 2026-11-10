@@ -1,5 +1,7 @@
 # A guide-aware QC and hit-calling workflow for pooled single-cell perturbation screens
 
+[![tests](https://github.com/hbusra/crispri-perturbseq-sarscov2/actions/workflows/tests.yml/badge.svg)](https://github.com/hbusra/crispri-perturbseq-sarscov2/actions/workflows/tests.yml)
+
 An independently written pipeline for QC'ing and calling hits in a CRISPRi
 Perturb-seq screen, validated by reproducing a published screen of SARS-CoV-2
 host factors in Calu-3 cells ([Sunshine et al., *Nature Communications* 14, 2023](https://doi.org/10.1038/s41467-023-41788-4);

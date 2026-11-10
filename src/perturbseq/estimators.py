@@ -1,7 +1,8 @@
-"""Estimators and null-construction helpers shared by 07 and 08.
+"""Estimators and null constructions.
 
-Kept in one place so the hit-calling statistic used to call hits and the one
-used to study the screen's resolution are provably the same function.
+Kept in one module so the statistic used to call hits is the same function as
+the one used to study the screen's resolution, and so that both can be tested
+against statsmodels and against simulated data where the truth is known.
 """
 from __future__ import annotations
 
@@ -106,3 +107,19 @@ def resample_delta_null(pool: dict, base: dict, lanes, n_l, draws: int, rng) -> 
             num += k * (p[rng.integers(0, len(p), k)].mean() - base[l])
         out[i] = num / w
     return out
+
+
+def bh_fdr(p: np.ndarray) -> np.ndarray:
+    p = np.asarray(p, dtype=float)
+    ok = ~np.isnan(p)
+    q = np.full(p.shape, np.nan)
+    pv = p[ok]
+    n = len(pv)
+    order = np.argsort(pv)
+    ranked = pv[order]
+    adj = ranked * n / (np.arange(n) + 1)
+    adj = np.minimum.accumulate(adj[::-1])[::-1]
+    out = np.empty(n)
+    out[order] = np.clip(adj, 0, 1)
+    q[ok] = out
+    return q

@@ -1,8 +1,7 @@
 #!/usr/bin/env python
-"""
-10 - All figures, built from the tables written by 02-09.
+"""Figure functions, built only from the tables in results/tables.
 
-Writes results/figures/fig1..fig8 .png
+Writes the PNGs in results/figures/
 
 Analysis and plotting are kept apart on purpose: every number drawn here comes
 from a .tsv in results/tables, so a figure can be regenerated, or redrawn
@@ -15,67 +14,35 @@ labelled or legended, so identity never rests on hue alone.
 """
 from __future__ import annotations
 
-import matplotlib
-matplotlib.use("Agg")
+from pathlib import Path
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from matplotlib.lines import Line2D
 
-import _common as C
-
-# ----------------------------------------------------------------- palette
-BLUE, ORANGE, AQUA = "#2a78d6", "#eb6834", "#1baf7a"
-RED = "#e34948"
-NEUTRAL = "#b4b3ad"
-GRID = "#e6e5e1"
-INK = "#0b0b0b"
-INK2 = "#52514e"
-B_LABEL = "2001"
-
-STATE_COLOR = {"uninfected": BLUE, "infected": ORANGE, "borderline": NEUTRAL}
-STATE_LABEL = {"uninfected": "bystander", "infected": "infected", "borderline": "borderline"}
-
-plt.rcParams.update({
-    "figure.dpi": 160,
-    "savefig.dpi": 160,
-    "savefig.bbox": "tight",
-    "font.size": 8.5,
-    "axes.titlesize": 9.5,
-    "axes.labelsize": 8.5,
-    "axes.titleweight": "semibold",
-    "axes.edgecolor": "#c9c8c3",
-    "axes.linewidth": 0.8,
-    "axes.labelcolor": INK2,
-    "text.color": INK,
-    "xtick.color": INK2,
-    "ytick.color": INK2,
-    "xtick.labelsize": 7.5,
-    "ytick.labelsize": 7.5,
-    "legend.frameon": False,
-    "legend.fontsize": 7.5,
-    "lines.linewidth": 2.0,
-})
+from .plotting import *  # palette and style()
 
 
-def style(ax, grid_axis="y"):
-    ax.spines["top"].set_visible(False)
-    ax.spines["right"].set_visible(False)
-    ax.grid(True, axis=grid_axis, color=GRID, linewidth=0.7, zorder=0)
-    ax.set_axisbelow(True)
+FIGURES = Path(__file__).resolve().parents[2] / "results" / "figures"
+TABLES = Path(__file__).resolve().parents[2] / "results" / "tables"
+
+
+def read_tbl(name):
+    return pd.read_csv(TABLES / name, sep="\t")
 
 
 def fig_path(name):
-    C.FIGURES.mkdir(parents=True, exist_ok=True)
-    return C.FIGURES / name
+    FIGURES.mkdir(parents=True, exist_ok=True)
+    return FIGURES / name
 
 
 # ============================================================ figure 1: QC
 def figure_infection_qc():
-    cs = C.read_tbl("03_cell_state.tsv.gz")
-    lane = C.read_tbl("03_state_summary.tsv")
-    dec = C.read_tbl("03_infected_by_depth_decile.tsv")
-    matched = pd.read_csv(C.TABLES / "03_host_umi_matched_depth.tsv", sep="\t", index_col=0)
+    cs = read_tbl("03_cell_state.tsv.gz")
+    lane = read_tbl("03_state_summary.tsv")
+    dec = read_tbl("03_infected_by_depth_decile.tsv")
+    matched = pd.read_csv(TABLES / "03_host_umi_matched_depth.tsv", sep="\t", index_col=0)
 
     fig, axes = plt.subplots(2, 2, figsize=(7.6, 5.4))
 
@@ -145,19 +112,19 @@ def figure_infection_qc():
                 xy=(0.97, 0.95), xycoords="axes fraction", ha="right", va="top",
                 fontsize=7, color=INK2)
 
-    fig.suptitle("Figure 2   Infection calling and the QC structure it rests on",
+    fig.suptitle("Infection calling and the QC structure it rests on",
                  x=0.005, ha="left", fontsize=11, fontweight="semibold")
     fig.tight_layout(rect=(0, 0, 1, 0.965))
-    fig.savefig(fig_path("fig2_infection_qc.png"))
+    fig.savefig(fig_path("infection_qc.png"))
     plt.close(fig)
-    print("fig2 (infection QC) done")
+    print("infection QC done")
 
 
 # ================================================== figure 2: knockdown QC
 def figure_knockdown():
-    kd = C.read_tbl("04_knockdown.tsv")
+    kd = read_tbl("04_knockdown.tsv")
     b = kd[(kd.population == "bystander") & kd.kd_pseudobulk.notna() & (kd.n_cells >= 20)]
-    con = C.read_tbl("04_construct_concordance.tsv")
+    con = read_tbl("04_construct_concordance.tsv")
 
     fig, axes = plt.subplots(1, 2, figsize=(7.6, 3.1))
 
@@ -196,17 +163,17 @@ def figure_knockdown():
     ax.set_ylabel("knockdown, vector B (%)")
     ax.set_title(f"b   Separately cloned vectors agree at r = {r:.2f}", loc="left")
 
-    fig.suptitle("Figure 3   The screen's internal positive control",
+    fig.suptitle("The screen's internal positive control",
                  x=0.005, ha="left", fontsize=11, fontweight="semibold")
     fig.tight_layout(rect=(0, 0, 1, 0.93))
-    fig.savefig(fig_path("fig3_knockdown.png"))
+    fig.savefig(fig_path("knockdown.png"))
     plt.close(fig)
-    print("fig3 (knockdown) done")
+    print("knockdown done")
 
 
 # ============================================= figure 3: the viral-load panel
 def figure_viral_hits():
-    A = C.read_tbl("07_hits_infection.tsv")
+    A = read_tbl("07_hits_infection.tsv")
     A = A.sort_values("log_or_mh").reset_index(drop=True)
     sig = (A.q_null < 0.1) & (~A.is_ntc)
 
@@ -277,17 +244,17 @@ def figure_viral_hits():
                 xy=(0.5, 0.26), xycoords="axes fraction", ha="center",
                 fontsize=6.6, color=INK2)
 
-    fig.suptitle("Figure 4   Hit calling for infection establishment",
+    fig.suptitle("Hit calling for infection establishment",
                  x=0.005, ha="left", fontsize=11, fontweight="semibold")
     fig.tight_layout(rect=(0, 0, 1, 0.93))
-    fig.savefig(fig_path("fig4_viral_hits.png"))
+    fig.savefig(fig_path("viral_hits.png"))
     plt.close(fig)
-    print("fig4 (hit calling) done")
+    print("viral hits done")
 
 
 # ================================================ figure 4: the concordance
 def figure_concordance():
-    con = C.read_tbl("07_concordance.tsv")
+    con = read_tbl("07_concordance.tsv")
     con = con.sort_values("infection_log_or")
     y = np.arange(len(con))
     colors = [BLUE if d == "down" else RED if d == "up" else NEUTRAL
@@ -316,7 +283,7 @@ def figure_concordance():
     ax.set_xlim(-2.2, 2.0)
     n_ok = int(con.agrees.sum())
     ax.set_title(
-        f"Figure 1   All {n_ok} of {len(con)} calls in Sunshine et al. Fig. 3A reproduce\n"
+        f"All {n_ok} of {len(con)} calls in Sunshine et al. Fig. 3A reproduce\n"
         "bar colour = the paper's claim; filled = an effect here at q < 0.1",
         loc="left", fontsize=9.5,
     )
@@ -333,13 +300,13 @@ def figure_concordance():
     ], loc="upper center", bbox_to_anchor=(0.5, -0.115), ncol=4, fontsize=6.6,
        frameon=False)
     fig.tight_layout(rect=(0, 0.03, 1, 1))
-    fig.savefig(fig_path("fig1_concordance.png"))
+    fig.savefig(fig_path("concordance.png"))
     plt.close(fig)
-    print("fig1 (concordance) done")
+    print("concordance done")
 
 # ======================================================= figure 5: the ISGs
-def figure5():
-    isg = C.read_tbl("06_isg_by_element.tsv")
+def figure_interferon():
+    isg = read_tbl("06_isg_by_element.tsv")
     isg = isg[isg.score == "isg_clean"].sort_values("delta_isg").reset_index(drop=True)
     sig = (isg.q_null < 0.1) & (~isg.is_ntc)
 
@@ -379,7 +346,7 @@ def figure5():
 
     # the paper's four, with and without the self-containment correction
     ax = axes[1]
-    cmp = C.read_tbl("06_isg_paper_comparison.tsv")
+    cmp = read_tbl("06_isg_paper_comparison.tsv")
     four = cmp[(cmp.paper == "down") & cmp.element.notna()]
     piv = four.pivot_table(index="target", columns="score", values="delta_isg")
     piv = piv.sort_values("isg_clean")
@@ -395,19 +362,19 @@ def figure5():
     ax.set_title("b   The score is not self-fulfilling", loc="left")
     ax.legend(loc="upper left", bbox_to_anchor=(0.0, 0.92))
 
-    fig.suptitle("Figure 5   Reproduction of the interferon panel",
+    fig.suptitle("Reproduction of the interferon panel",
                  x=0.005, ha="left", fontsize=11, fontweight="semibold")
     fig.tight_layout(rect=(0, 0, 1, 0.93))
-    fig.savefig(fig_path("fig5_isg.png"))
+    fig.savefig(fig_path("interferon.png"))
     plt.close(fig)
-    print("fig5 done")
+    print("interferon done")
 
 
 # ================================================= figure 6: the resolution
-def figure6():
-    curve = C.read_tbl("08_downsample_curve.tsv")
-    det = C.read_tbl("08_detectable_effect.tsv")
-    rep = C.read_tbl("04_element_representation.tsv")
+def figure_resolution():
+    curve = read_tbl("08_downsample_curve.tsv")
+    det = read_tbl("08_detectable_effect.tsv")
+    rep = read_tbl("04_element_representation.tsv")
 
     fig, axes = plt.subplots(1, 3, figsize=(8.6, 3.0))
 
@@ -457,18 +424,18 @@ def figure6():
                 xy=(0.97, 0.80), xycoords="axes fraction", ha="right", va="top",
                 fontsize=6.6, color=INK2)
 
-    fig.suptitle("Figure 6   Perturbation representation sets what the screen can find",
+    fig.suptitle("Perturbation representation sets what the screen can find",
                  x=0.005, ha="left", fontsize=11, fontweight="semibold")
     fig.tight_layout(rect=(0, 0, 1, 0.92))
-    fig.savefig(fig_path("fig6_resolution.png"))
+    fig.savefig(fig_path("resolution.png"))
     plt.close(fig)
-    print("fig6 done")
+    print("resolution done")
 
 
 # ========================================== figure 7: infected vs bystander
-def figure7():
-    pt = C.read_tbl("09_program_scores_by_state.tsv")
-    tab = C.read_tbl("09_state_specific_effects.tsv")
+def figure_infection_state():
+    pt = read_tbl("09_program_scores_by_state.tsv")
+    tab = read_tbl("09_state_specific_effects.tsv")
 
     fig, axes = plt.subplots(1, 2, figsize=(7.6, 3.4))
 
@@ -519,20 +486,20 @@ def figure7():
     ax.set_xlabel("correlation of the effect between the two states")
     ax.set_title("b   How transferable each program is", loc="left")
 
-    fig.suptitle("Figure 7   Extension: does a perturbation do the same thing once the cell is infected?",
+    fig.suptitle("Extension: does a perturbation do the same thing once the cell is infected?",
                  x=0.005, ha="left", fontsize=10.5, fontweight="semibold")
     fig.tight_layout(rect=(0, 0, 1, 0.93))
-    fig.savefig(fig_path("fig7_infected_vs_bystander.png"))
+    fig.savefig(fig_path("infection_state.png"))
     plt.close(fig)
-    print(f"fig7 done (median gene-level profile r = {tab.r_profiles.median():.3f})")
+    print(f"infection state done (median profile r = {tab.r_profiles.median():.3f})")
 
 
 
 # =============================== figure 8: the organoid bridge
 def figure_organoid():
-    el = C.read_tbl("14_element_signature.tsv")
+    el = read_tbl("14_element_signature.tsv")
 
-    fig, ax = plt.subplots(figsize=(5.4, 4.4))
+    fig, ax = plt.subplots(figsize=(4.4, 3.6))
     xcol = "rho_organoid_infection_within_run"
     ycol = "rho_organoid_drug_in_infected"
     t = el[~el.is_ntc]
@@ -557,7 +524,7 @@ def figure_organoid():
     style(ax, grid_axis="both")
     ax.set_xlabel("resembles the organoid infection signature")
     ax.set_ylabel("resembles the organoid drug signature")
-    ax.set_title("Figure 8   Interferon knockdowns phenocopy the drug signature\n"
+    ax.set_title("Interferon knockdowns phenocopy the drug signature\n"
                  "each point is a library element, scored in bystander cells",
                  loc="left", fontsize=9.5)
     ax.legend(handles=[
@@ -567,18 +534,6 @@ def figure_organoid():
                label="non-targeting elements"),
     ], loc="lower left", fontsize=6.8)
     fig.tight_layout()
-    fig.savefig(fig_path("fig8_organoid_bridge.png"))
+    fig.savefig(fig_path("organoid_signatures.png"))
     plt.close(fig)
-    print("fig8 (organoid bridge) done")
-
-
-if __name__ == "__main__":
-    figure_concordance()      # Figure 1: does the screen reproduce?
-    figure_infection_qc()     # Figure 2: is the phenotype real?
-    figure_knockdown()        # Figure 3: did the perturbations work?
-    figure_viral_hits()       # Figure 4: the full hit list
-    figure5()
-    figure6()
-    figure7()
-    figure_organoid()
-    print(f"\nfigures written to {C.FIGURES}")
+    print("organoid signatures done")

@@ -162,14 +162,14 @@ column names are now `p_null` / `q_null`.
 
 Two constructions are used, because the two statistics need different ones:
 
-**Phenotype A — lane-matched binomial null** (`_hitcalling_core.mh_null_draws`).
+**Phenotype A — lane-matched binomial null** (`perturbseq.estimators.mh_null_draws`).
 For element *e* with n<sub>ℓ</sub> cells in lane ℓ, each draw generates
 a<sub>ℓ</sub> ~ Binomial(n<sub>ℓ</sub>, p̂<sub>ℓ</sub>), where p̂<sub>ℓ</sub> is the
 pooled non-targeting infection rate in that lane, and recomputes the MH odds ratio
 against the observed non-targeting counts.
 
 **Phenotypes B and 3c — non-parametric bootstrap of control cells**
-(`_hitcalling_core.resample_delta_null`). Each draw samples, **with replacement**,
+(`perturbseq.estimators.resample_delta_null`). Each draw samples, **with replacement**,
 the same number of cells in each lane as the element has, from that lane's pooled
 non-targeting cells, and recomputes the lane-weighted mean difference.
 

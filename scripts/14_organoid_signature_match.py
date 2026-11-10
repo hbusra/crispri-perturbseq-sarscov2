@@ -17,17 +17,14 @@ signature.
 
 Three decisions make the comparison honest rather than decorative.
 
-1. **Everything is depth-matched.** The organoid LFCs used here are the
-   downsampled ("ds") columns, not the raw ones, because viral-RNA-harbouring
-   organoid cells are sequenced deeper than bystanders. In Calu-3 the bias runs
-   the other way - infected cells are 9x shallower - so every cell here is
-   binomially downsampled to a common host depth before anything is computed.
-   Depth artefacts of this size manufacture pathway-level conclusions in both
-   datasets; see docs/results.md.
+1. **Both sides are put on a common footing.** The organoid LFCs used here are
+   the downsampled ("ds") columns the organoid reanalysis provides, and the
+   Calu-3 cells are likewise brought to a common host depth, so the two profiles
+   are built the same way before they are compared.
 2. **Perturbation effects are measured within one cell population.** Each
    element's profile is computed in bystander cells only, against non-targeting
-   bystanders. Both arms then have the same infection status and the same depth
-   distribution, which an infected-versus-bystander contrast does not.
+   bystanders, so both arms share infection status and the comparison is
+   perturbation against control rather than one cell state against another.
 3. **The null comes from the controls.** Each non-targeting element is scored
    the same way against the other non-targeting cells, giving the distribution
    of signature correlations expected with no perturbation at all. Element

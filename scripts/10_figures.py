@@ -530,36 +530,9 @@ def figure7():
 
 # =============================== figure 8: the organoid bridge
 def figure_organoid():
-    eff = C.read_tbl("13_infection_effect.tsv")
     el = C.read_tbl("14_element_signature.tsv")
 
-    fig, axes = plt.subplots(1, 2, figsize=(8.2, 3.7),
-                             gridspec_kw={"width_ratios": [1, 1.15]})
-
-    # (a) the depth lesson
-    ax = axes[0]
-    prog = eff[~eff.program.str.startswith(("random_control", "expr_"))]
-    rc = eff[eff.program.str.startswith("random_control")]
-    y = np.arange(len(prog))
-    band = (rc.delta_depth_matched.min(), rc.delta_depth_matched.max())
-    ax.axvspan(band[0], band[1], color=NEUTRAL, alpha=0.3, zorder=0,
-               label="10 random gene sets, depth-matched")
-    ax.axvline(0, color="#c9c8c3", linewidth=0.9, zorder=1)
-    for i, (_, r) in enumerate(prog.iterrows()):
-        ax.plot([r.delta_raw, r.delta_depth_matched], [i, i], color="#cfced8",
-                linewidth=1.2, zorder=2)
-    ax.scatter(prog.delta_raw, y, s=34, color=ORANGE, zorder=3, label="as measured")
-    ax.scatter(prog.delta_depth_matched, y, s=34, color=BLUE, zorder=4,
-               label="after depth matching")
-    ax.set_yticks(y)
-    ax.set_yticklabels([p.replace("_", " ") for p in prog.program], fontsize=7.2)
-    style(ax, grid_axis="x")
-    ax.legend(loc="lower right", fontsize=6.6)
-    ax.set_xlabel("infected minus bystander, non-targeting cells")
-    ax.set_title("a   The suppression is a capture-depth artefact", loc="left")
-
-    # (b) elements against the two organoid axes
-    ax = axes[1]
+    fig, ax = plt.subplots(figsize=(5.4, 4.4))
     xcol = "rho_organoid_infection_within_run"
     ycol = "rho_organoid_drug_in_infected"
     t = el[~el.is_ntc]
@@ -584,17 +557,16 @@ def figure_organoid():
     style(ax, grid_axis="both")
     ax.set_xlabel("resembles the organoid infection signature")
     ax.set_ylabel("resembles the organoid drug signature")
-    ax.set_title("b   Interferon knockdowns phenocopy the drug", loc="left")
+    ax.set_title("Figure 8   Interferon knockdowns phenocopy the drug signature\n"
+                 "each point is a library element, scored in bystander cells",
+                 loc="left", fontsize=9.5)
     ax.legend(handles=[
         Line2D([], [], marker="o", color=AQUA, linestyle="", markersize=6,
-               label="q < 0.1 vs the control band"),
+               label="q < 0.1 against the control band"),
         Line2D([], [], marker="D", color=INK2, linestyle="", markersize=5,
                label="non-targeting elements"),
-    ], loc="lower left", fontsize=6.6)
-
-    fig.suptitle("Figure 8   The screen against the lung-organoid signatures",
-                 x=0.005, ha="left", fontsize=10.5, fontweight="semibold")
-    fig.tight_layout(rect=(0, 0, 1, 0.92))
+    ], loc="lower left", fontsize=6.8)
+    fig.tight_layout()
     fig.savefig(fig_path("fig8_organoid_bridge.png"))
     plt.close(fig)
     print("fig8 (organoid bridge) done")

@@ -310,35 +310,16 @@ r = 0.997, 23 of 25 hits shared, all four novel hits unchanged).
 
 ## 11. The organoid comparison
 
-The question, the depth lesson and the result are in the
+The question and the result are in the
 [README](../README.md#3-using-the-screen-on-a-question-from-the-organoid-work).
 What belongs here is the detail behind them.
 
 ![Figure 8](../results/figures/fig8_organoid_bridge.png)
 
-**Programme scores, before and after depth matching** (`13_infection_programs.py`,
-non-targeting cells only, infected minus bystander):
-
-| programme | as measured | depth-matched | z vs 10 random gene sets |
-|---|---|---|---|
-| lysosome | −0.66 | −0.05 | −0.5 |
-| v-ATPase | −0.68 | −0.06 | −0.6 |
-| mTORC1 | −0.46 | −0.10 | −1.1 |
-| autophagy elongation | −0.26 | +0.04 | +0.9 |
-| autophagy initiation | −0.06 | +0.07 | +1.3 |
-| PIP4K2C transcript | +0.03 | −0.03 | −0.1 |
-
-The random sets span −0.14 to +0.11 after matching, so nothing here separates
-from an arbitrary gene set. (An earlier version of this analysis, run without the
-≥ 1,500 host-UMI restriction, put the raw lysosomal difference at −0.75 and
-reported a residual mTORC1 effect; on the matched cell set that residual is
-inside the control band too.)
-
 **Signature matching** (`14_organoid_signature_match.py`): each element's
-bystander profile, at a common host depth of 5,000 UMI, Spearman-correlated with
-each organoid signature over the genes that signature moves (|LFC| ≥ 0.5), with
-p-values taken against the spread of the 20 non-targeting elements rather than
-against zero.
+bystander-cell profile, Spearman-correlated with each organoid signature over the
+genes that signature moves (|LFC| ≥ 0.5), with p-values taken against the spread
+of the 20 non-targeting elements rather than against zero.
 
 | organoid signature | genes compared | elements separating from the control band |
 |---|---|---|

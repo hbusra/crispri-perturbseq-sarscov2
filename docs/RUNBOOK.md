@@ -137,6 +137,21 @@ unfolded protein 0.20.
 estimates at r = 0.9999 (median |difference| 0.006 log OR); 28 hits against 30,
 27 shared, Jaccard 0.87; fitted lane SD 0.33 on the log-odds scale.
 
+**11_mixed_effects** — lane random-intercept GLMM, ~20 s; r = 0.9999 with the
+Mantel-Haenszel estimates.
+
+**12_borderline_cells** — the 2,696 cells between the two viral-load modes:
+entry-factor knockdowns deplete them, ORF1ab:N ratio 0.100 vs 0.068 in infected
+cells, no shutoff at matched depth. The published interferon result is unchanged
+by how they are classified.
+
+**13_infection_programs** — autophagy/lysosome programme scores, raw and after
+downsampling every cell to 1,500 host UMI, against ten random gene sets.
+
+**14_organoid_signature_match** — needs the organoid DE tables, which are not
+public; 17 elements match the drug signature, 0 match the cross-run infection
+signature.
+
 **pytest** — `python -m pytest tests -q`: 12 estimator tests, ~10 s.
 
 ## 4. Runtime

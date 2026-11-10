@@ -10,8 +10,11 @@ data [GSE208240](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE208240)).
 1. **The screen reproduces.** All 21 of the published viral-load calls come back
    in the right direction — the 14 reported hits at q < 0.05 and the 7 reported
    non-hits failing q < 0.1 — using a different statistical approach from the
-   original. All four of the paper's novel interferon hits (GPR89A/B, KEAP1,
-   SPNS1, BRD2) and the canonical JAK-STAT axis return at q < 0.01.
+   original. All four of the paper's novel interferon hits return at q < 0.01
+   (KEAP1, SPNS1, BRD2, and GPR89A/B via the GPR89A element and the
+   GPR89A+GPR89B dual element), as does the canonical JAK-STAT axis. The one
+   element-level exception is **GPR89B on its own, which does not reproduce**
+   (rank 131 of 190); the paper reports the paralogue pair together.
 2. **One published arm rests on a reagent that does not work.** The FURIN
    elements show **no knockdown of FURIN** (+6% to −19%, against a library median
    of 88%), so the single-gene FURIN arm of the protease-redundancy argument is
@@ -40,7 +43,7 @@ own script:
 |---|---|---|---|
 | 1 | Did the perturbation work? | `04_guide_qc.py` | median 88% on-target knockdown; 76% of element–gene pairs clear 75%; **FURIN does not knock down at all** |
 | 2 | Is the phenotype real, or a measurement artefact? | `03_infection.py` | three independent classifiers agree ≥ 99.3%; calls stable to 10× downsampling |
-| 3 | Is the effect bigger than control-to-control noise? | `07_hit_calling.py` | lane-matched resampling null from the non-targeting controls; 0 of 20 control elements reach p < 0.1 |
+| 3 | Is the effect bigger than control-to-control noise? | `07_hit_calling.py` | lane-matched resampling null from the non-targeting controls; calibrated on controls **per phenotype** (infection 0/20 at p < 0.1, burden 3/21, bystander ISG 3/20, against 10% expected) |
 
 ## Methods in brief
 
@@ -52,7 +55,12 @@ own script:
   *burden given infection* is a negative-binomial GLM with `log(host UMI)` as an
   offset (5 of 149). The offset is never total UMI, which contains the outcome.
 - **Blocking.** 10x channels 5–8 carry 1.4× the infection rate of channels 1–4,
-  so lane is a stratum in every model and every null.
+  so lane is a stratum in every model and every null. Treating lane as a
+  **random intercept instead** (`11_mixed_effects.py`, a per-element binomial
+  GLMM) changes essentially nothing: effect sizes correlate at r = 0.9999 and
+  27 of 30 hits are shared. The fixed-effect stratified estimator is kept
+  because it assumes less; the GLMM is a sensitivity check, and it is a *lane*
+  random effect, not a biological one.
 - **Significance** from a control-based resampling null: 2,000 lane-matched
   pseudo-elements drawn from the pooled non-targeting cells. This is not a
   permutation of perturbation labels, and
@@ -91,6 +99,7 @@ scripts/
   08_representation.py        subsampling curves, resolution, underpowered elements
   09_infected_vs_bystander.py the extension
   10_figures.py               every figure, drawn from the tables only
+  11_mixed_effects.py         lane random-intercept GLMM vs the stratified estimator
   _common.py                  paths, gene sets, BH-FDR
   _hitcalling_core.py         the estimators and nulls shared by 07 and 08
 tests/
@@ -114,7 +123,8 @@ conda env create -f environment.yml && conda activate perturbseq-cov2
 bash scripts/00_download.sh data/raw            # ~1.2 GB from GEO
 python scripts/01_build_anndata.py --raw data/raw --out data
 for s in 02_qc 03_infection 04_guide_qc 05_viral_load 06_isg \
-         07_hit_calling 08_representation 09_infected_vs_bystander 10_figures; do
+         07_hit_calling 08_representation 09_infected_vs_bystander 10_figures \
+         11_mixed_effects; do
     python scripts/$s.py
 done
 python -m pytest tests -q                       # 12 estimator tests, ~10 s

@@ -78,6 +78,8 @@ python scripts/07_hit_calling.py
 python scripts/08_representation.py
 python scripts/09_infected_vs_bystander.py
 python scripts/10_figures.py
+python scripts/11_mixed_effects.py
+python -m pytest tests -q
 ```
 
 ### What each step should report
@@ -129,6 +131,11 @@ Program-level effect correlations between states: ISG 0.74, MHC-I 0.54, NF-κB 0
 unfolded protein 0.20.
 
 **10_figures** — seven PNGs in `results/figures/`.
+
+**11_mixed_effects** — lane random-intercept GLMM for the 184 elements over the
+55-cell cut, about 20 s. Effect sizes correlate with the Mantel-Haenszel
+estimates at r = 0.9999 (median |difference| 0.006 log OR); 28 hits against 30,
+27 shared, Jaccard 0.87; fitted lane SD 0.33 on the log-odds scale.
 
 **pytest** — `python -m pytest tests -q`: 12 estimator tests, ~10 s.
 

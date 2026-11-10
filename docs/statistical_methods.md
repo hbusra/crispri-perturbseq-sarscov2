@@ -185,11 +185,16 @@ Answering the specific questions an interviewer will ask:
 | FDR across what? | Benjamini–Hochberg within each phenotype, across that phenotype's **targeting** elements only (§5). |
 | Is the null re-matched per element? | Yes. Every element gets its own 2,000 draws at its own per-lane cell counts. |
 
-**Calibration.** Running the real non-targeting elements through the pipeline as if
-they were perturbations gives 0 of 20 below p = 0.05 and a median p of 0.44. The
-Wald p-values are also well behaved (0 below 0.05, median 0.42), so at these cell
-counts the independence assumption is not visibly costing anything; the
-control-based null is still used because it does not rest on that assumption.
+**Calibration, per phenotype.** Running the real non-targeting elements through the
+pipeline as if they were perturbations gives, for **infection establishment**, 0 of
+20 below p = 0.05 and a median p of 0.44 (the GLM's own Wald p-values are equally
+well behaved: 0 below 0.05, median 0.42), so at these cell counts the independence
+assumption is not visibly costing anything; the control-based null is still used
+because it does not rest on that assumption. For **viral burden** 3 of 21 controls
+reach raw p < 0.1, and for the **bystander ISG score** 3 of 20 do — both close to
+the 2 expected from a correctly calibrated 10% test on that many controls. The
+infection figure is the strictest of the three and should not be quoted as if it
+covered all three phenotypes.
 `tests/test_estimators.py` additionally checks both null constructions against
 simulated data where the truth is null, and requires a false-positive rate near 5%
 and a mean p near 0.5.
@@ -243,8 +248,9 @@ about those targets.
   one infection experiment. The null controls cell- and lane-level sampling noise.
   It says nothing about whether the screen would replicate in a second infection.
 - **No mixed-effects model with a biological random effect**, for the same reason:
-  no grouping factor above the lane has an estimable variance. Lane enters as a
-  fixed effect or a stratum, which is what the design supports.
+  no grouping factor above the lane has an estimable variance. A *lane* random
+  intercept is estimable and is fitted as a sensitivity check (§9); a random
+  effect for infection experiment is not, because there is one.
 - **No formal power analysis.** §6 describes this screen's resolution given its
   coverage, not power for a future experiment.
 - **No unbiasedness claim** from the subsampling in §6; see the wording there.
@@ -262,3 +268,48 @@ confounded design a pooled estimator fails; NB recovery of a known rate ratio; t
 the total-UMI offset is measurably the worse estimator; BH against
 `statsmodels.multipletests`, including NaN handling; the plus-one correction; and
 calibration of both null constructions on data generated under the null.
+
+## 9. Lane as a random intercept: a sensitivity check
+
+Hits are called with lane as a **stratum**, i.e. a fixed effect, in a
+Mantel–Haenszel odds ratio. The obvious alternative is to let the eight lane
+effects shrink toward a common mean. `11_mixed_effects.py` fits that model, per
+element, on the element's cells pooled with all non-targeting cells:
+
+    logit P(infected) = b0 + b1 · perturbed + u_lane ,   u_lane ~ N(0, s²)
+
+by variational Bayes (`statsmodels.BinomialBayesMixedGLM`), so b1 is a
+perturbation log odds ratio directly comparable to the MH estimate. Fitted for
+all 184 elements that clear the 55-cell cut
+(164 targeting + 20 controls);
+the whole sweep takes about 20 seconds.
+
+| comparison | value |
+|---|---|
+| Pearson r, GLMM vs MH log OR | **0.9999** |
+| Spearman ρ | 0.9997 |
+| median \|difference\| in log OR | 0.006 (max 0.037) |
+| median SE ratio, GLMM / MH | 0.967 |
+| hits at q < 0.1 | 30 (MH) vs 28 (GLMM), 27 shared, Jaccard 0.87 |
+| fitted lane SD, log-odds scale | 0.33 (median across elements) |
+| controls with Wald p < 0.05 | 0 of 20 |
+
+The fitted lane SD of 0.33 on the log-odds scale
+confirms the lane effect is real and worth modelling; it is the same signal that
+shows up as the 1.4× infection-rate difference between channel groups. But the
+choice of *how* to model it is immaterial here, because the lanes are large and
+every element's cells are spread across all eight, so there is little for a
+random intercept to shrink and the two estimators land on the same answer. Four
+elements move across the q = 0.1 boundary (three MH-only, one GLMM-only), and
+all four are boundary cases in both fits.
+
+The stratified estimator remains primary for two reasons: it assumes nothing
+about the distribution of lane effects, and it is the statistic the resampling
+null in §4 is built around, so the null and the point estimate are the same
+function of the data.
+
+**What this does not do.** The random effect is over 10x channels, not over
+infection experiments. Lanes are not independent infections, so pooling them
+with a random intercept does not produce a between-experiment variance
+component and does not license any claim of biological reproducibility. Point 1
+of §7 is unchanged by this analysis.

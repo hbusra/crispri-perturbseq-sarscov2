@@ -15,6 +15,6 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install the dependencies the tests need
-        run: pip install numpy pandas scipy statsmodels anndata pytest
+        run: pip install numpy pandas scipy statsmodels anndata matplotlib pytest
       - name: Run the estimator tests
         run: python -m pytest tests -q

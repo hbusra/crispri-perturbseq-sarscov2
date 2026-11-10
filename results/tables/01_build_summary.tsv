@@ -1,0 +1,16 @@
+metric	value
+barcodes_in_matrix	90380.0
+features_in_matrix	33549.0
+host_features	33538.0
+viral_features	9.0
+lenti_features	2.0
+cells_assigned	27882.0
+cells_wt_candidate	16391.0
+library_elements	237.0
+ntc_elements	22.0
+gem_groups	8.0
+median_cells_per_element	113.0
+elements_under_55_cells	47.0
+median_host_umi_assigned	18066.5
+median_genes_assigned	4228.0
+median_viral_frac_assigned	0.0032689792569726706

@@ -10,7 +10,7 @@ Writes
 The published analysis restricts the ISG score to bystander cells, because
 infected cells actively suppress interferon signalling, so a score computed on
 a mixed population mostly measures each element's infected fraction rather than
-its effect on interferon. We keep that restriction and show what happens
+its effect on interferon. That restriction is kept here, and the script shows what happens
 without it.
 
 Two traps, both handled explicitly:
@@ -192,7 +192,7 @@ def main() -> None:
                 )
     cmp = pd.DataFrame(rows)
     cmp.to_csv(C.tbl("06_isg_paper_comparison.tsv"), sep="\t", index=False)
-    print("\nthe paper's interferon results in our ranking:")
+    print("\nthe paper's interferon results in this ranking:")
     print(cmp.round(4).to_string(index=False))
 
 

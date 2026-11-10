@@ -21,7 +21,7 @@ The ambient-RNA problem
 -----------------------
 Every droplet picks up cell-free viral RNA, so a viral count above zero is not
 evidence of infection. The paper spiked in ~1% wild-type Calu-3 cells (no
-dCas9, no sgRNA) to measure that background. We rebuild the reference as
+dCas9, no sgRNA) to measure that background. The reference is rebuilt as
 
     barcodes with no guide detected, zero lentiviral reads, total UMI >= 10,000
 
@@ -29,8 +29,8 @@ which gives 705 cells here. That set is *not* clean: about an eighth of it sits
 in the high-viral mode, i.e. real library cells whose guide was not captured.
 A mean-and-SD background computed on it is therefore inflated by more than an
 order of magnitude (SCV_N: mean 966, SD 2487), and a mean + 2 SD rule calls
-almost nothing infected. We use median-based statistics instead, which tolerate
-that contamination, and we check the resulting rule against the reference set.
+almost nothing infected. Median-based statistics are used instead, which tolerate
+that contamination, and the resulting rule is checked against the reference set.
 
 Three classifiers
 -----------------
@@ -149,9 +149,9 @@ def main() -> None:
     #    that can be rebuilt from the deposited data is contaminated by real
     #    library cells whose guide was not captured, so its SD is enormous
     #    (SCV_N: mean 966, SD 2487) and the threshold lands above almost every
-    #    cell. This is a limitation of the reference we can reconstruct, not a
+    #    cell. This is a limitation of the reconstructable reference, not a
     #    claim that the published rule is wrong -- the authors had the true
-    #    spike-in identity and we do not.
+    #    spike-in identity, which is not recoverable from the deposited matrix.
     thr_literal = np.maximum(MIN_COUNT, bg.mean_ref + 2 * bg.sd_ref).to_numpy()
     state_lit = np.where((obs[vcols].to_numpy() >= thr_literal[None, :]).any(axis=1),
                          "infected", "uninfected")

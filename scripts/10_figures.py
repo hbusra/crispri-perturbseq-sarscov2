@@ -71,7 +71,7 @@ def fig_path(name):
 
 
 # ============================================================ figure 1: QC
-def figure1():
+def figure_infection_qc():
     cs = C.read_tbl("03_cell_state.tsv.gz")
     lane = C.read_tbl("03_state_summary.tsv")
     dec = C.read_tbl("03_infected_by_depth_decile.tsv")
@@ -145,16 +145,16 @@ def figure1():
                 xy=(0.97, 0.95), xycoords="axes fraction", ha="right", va="top",
                 fontsize=7, color=INK2)
 
-    fig.suptitle("Figure 1   Infection calling and the QC structure it rests on",
+    fig.suptitle("Figure 2   Infection calling and the QC structure it rests on",
                  x=0.005, ha="left", fontsize=11, fontweight="semibold")
     fig.tight_layout(rect=(0, 0, 1, 0.965))
-    fig.savefig(fig_path("fig1_infection_qc.png"))
+    fig.savefig(fig_path("fig2_infection_qc.png"))
     plt.close(fig)
-    print("fig1 done")
+    print("fig2 (infection QC) done")
 
 
 # ================================================== figure 2: knockdown QC
-def figure2():
+def figure_knockdown():
     kd = C.read_tbl("04_knockdown.tsv")
     b = kd[(kd.population == "bystander") & kd.kd_pseudobulk.notna() & (kd.n_cells >= 20)]
     con = C.read_tbl("04_construct_concordance.tsv")
@@ -196,16 +196,16 @@ def figure2():
     ax.set_ylabel("knockdown, vector B (%)")
     ax.set_title(f"b   Separately cloned vectors agree at r = {r:.2f}", loc="left")
 
-    fig.suptitle("Figure 2   The screen's internal positive control",
+    fig.suptitle("Figure 3   The screen's internal positive control",
                  x=0.005, ha="left", fontsize=11, fontweight="semibold")
     fig.tight_layout(rect=(0, 0, 1, 0.93))
-    fig.savefig(fig_path("fig2_knockdown.png"))
+    fig.savefig(fig_path("fig3_knockdown.png"))
     plt.close(fig)
-    print("fig2 done")
+    print("fig3 (knockdown) done")
 
 
 # ============================================= figure 3: the viral-load panel
-def figure3():
+def figure_viral_hits():
     A = C.read_tbl("07_hits_infection.tsv")
     A = A.sort_values("log_or_mh").reset_index(drop=True)
     sig = (A.q_null < 0.1) & (~A.is_ntc)
@@ -277,68 +277,65 @@ def figure3():
                 xy=(0.5, 0.26), xycoords="axes fraction", ha="center",
                 fontsize=6.6, color=INK2)
 
-    fig.suptitle("Figure 3   Hit calling for infection establishment",
+    fig.suptitle("Figure 4   Hit calling for infection establishment",
                  x=0.005, ha="left", fontsize=11, fontweight="semibold")
     fig.tight_layout(rect=(0, 0, 1, 0.93))
-    fig.savefig(fig_path("fig3_viral_hits.png"))
+    fig.savefig(fig_path("fig4_viral_hits.png"))
     plt.close(fig)
-    print("fig3 done")
+    print("fig4 (hit calling) done")
 
 
 # ================================================ figure 4: the concordance
-def figure4():
+def figure_concordance():
     con = C.read_tbl("07_concordance.tsv")
     con = con.sort_values("infection_log_or")
     y = np.arange(len(con))
     colors = [BLUE if d == "down" else RED if d == "up" else NEUTRAL
               for d in con.paper_direction]
 
-    # Fill carries OUR call, colour carries the paper's claim:
-    #   solid bar  = we call an effect (q < 0.1)
-    #   hollow bar = we do not
-    # So a hollow grey bar, however long, is a target both we and the paper call
-    # null: bar length alone is not a claim.
+    # Fill carries this analysis's call, colour carries the paper's claim:
+    #   solid bar  = an effect at q < 0.1 here
+    #   hollow bar = no effect here
+    # So a hollow grey bar, however long, is a target called null both in the
+    # paper and here: bar length alone is not a claim.
     called = (con.infection_q < 0.1).to_numpy()
 
-    fig, ax = plt.subplots(figsize=(6.8, 5.8))
+    fig, ax = plt.subplots(figsize=(6.6, 5.2))
     ax.axvline(0, color="#c9c8c3", linewidth=0.9, zorder=1)
     ax.barh(y, con.infection_log_or,
             color=[c if k else "none" for c, k in zip(colors, called)],
             edgecolor=colors, linewidth=1.1, height=0.6, zorder=2)
     for i, (_, r) in enumerate(con.iterrows()):
-        our = {"down": "we call: less infection",
-               "up": "we call: more infection",
-               "ns": "we call: no effect"}[r.infection_called]
-        tick = "matches" if r.agrees else "DISAGREES"
-        # every label sits in the empty right half, so nothing collides with a
-        # bar or with the target names on the left
         xpos = max(r.infection_log_or, 0) + 0.08
-        ax.text(xpos, i, f"q={r.infection_q:.3f}   {our} — {tick}",
-                va="center", ha="left", fontsize=6.4, color=INK2)
+        ax.text(xpos, i, f"q = {r.infection_q:.3f}", va="center", ha="left",
+                fontsize=6.6, color=INK2)
     ax.set_yticks(y)
     ax.set_yticklabels(con.target, fontsize=7.2)
     style(ax, grid_axis="x")
-    ax.set_xlabel("our lane-stratified log odds ratio vs NTC")
-    ax.set_xlim(-2.2, 3.3)
+    ax.set_xlabel("lane-stratified log odds ratio vs non-targeting controls")
+    ax.set_xlim(-2.2, 2.0)
     n_ok = int(con.agrees.sum())
     ax.set_title(
-        f"Figure 4   All {n_ok} of {len(con)} published calls reproduced\n"
-        "colour = what the paper reports (blue less viral RNA, red more, grey no effect).\n"
-        "filled = we call an effect at q < 0.1; hollow = we do not.",
+        f"Figure 1   All {n_ok} of {len(con)} calls in Sunshine et al. Fig. 3A reproduce\n"
+        "bar colour = the paper's claim; filled = an effect here at q < 0.1",
         loc="left", fontsize=9.5,
     )
     ax.legend(handles=[
-        Line2D([], [], marker="s", color=INK2, linestyle="", markersize=6,
-               label="filled: significant for us (q < 0.1)"),
+        Line2D([], [], marker="s", color=BLUE, linestyle="", markersize=6,
+               label="paper: less viral RNA"),
+        Line2D([], [], marker="s", color=RED, linestyle="", markersize=6,
+               label="paper: more"),
+        Line2D([], [], marker="s", color=NEUTRAL, linestyle="", markersize=6,
+               label="paper: no effect"),
         Line2D([], [], marker="s", markerfacecolor="none", markeredgecolor=INK2,
                color=INK2, linestyle="", markersize=6,
-               label="hollow: not significant for us"),
-    ], loc="upper right", bbox_to_anchor=(1.0, -0.085), ncol=2, fontsize=6.8)
-    fig.tight_layout()
-    fig.savefig(fig_path("fig4_concordance.png"))
+               label="hollow: no effect here"),
+    ], loc="upper center", bbox_to_anchor=(0.5, -0.115), ncol=4, fontsize=6.6,
+       frameon=False)
+    fig.tight_layout(rect=(0, 0.03, 1, 1))
+    fig.savefig(fig_path("fig1_concordance.png"))
     plt.close(fig)
-    print("fig4 done")
-
+    print("fig1 (concordance) done")
 
 # ======================================================= figure 5: the ISGs
 def figure5():
@@ -531,10 +528,10 @@ def figure7():
 
 
 if __name__ == "__main__":
-    figure1()
-    figure2()
-    figure3()
-    figure4()
+    figure_concordance()      # Figure 1: does the screen reproduce?
+    figure_infection_qc()     # Figure 2: is the phenotype real?
+    figure_knockdown()        # Figure 3: did the perturbations work?
+    figure_viral_hits()       # Figure 4: the full hit list
     figure5()
     figure6()
     figure7()

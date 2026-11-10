@@ -12,7 +12,7 @@ What this script is for
 Two things matter downstream and both are checked here rather than assumed:
 
 1. Depth is not constant across lanes. Any per-element phenotype is at risk of
-   confounding if elements are unevenly distributed across lanes, so we report
+   confounding if elements are unevenly distributed across lanes, so this step reports
    the lane composition of every element and the depth spread between lanes.
 
 2. The viral fraction of a cell's library is large (up to most of the library).

@@ -1,16 +1,43 @@
 # Results in detail
 
-The [README](../README.md) carries the headline numbers. This document is the
-long version: every figure, what it rests on, where this reanalysis disagrees
-with the published account, and what the design cannot support. The statistical
-definitions behind it are in [statistical_methods.md](statistical_methods.md);
-every number here is in `results/tables/` as a `.tsv`.
+The README has the headline numbers; this is the full version — all seven
+figures, where the reanalysis disagrees with the published account, and what the
+design does not support. Definitions are in
+[statistical_methods.md](statistical_methods.md), and every number quoted here
+is in `results/tables/` as a `.tsv`.
 
 ---
 
-## 1. Infection calling, and what it rests on
+## 1. The screen reproduces
 
-![Figure 1](../results/figures/fig1_infection_qc.png)
+![Figure 1](../results/figures/fig1_concordance.png)
+
+The 21 calls are the ones the paper makes in **Fig. 3A** and the text around it:
+14 targets reported to change viral load (SEC62 up, the rest down) and 7 reported
+to have no effect on their own.
+
+**How to read this.** Bar colour is what the *paper* claims; fill is the call made
+here. "Reproduced" means the two agree, and that includes agreeing that a target
+has no effect — so the hollow grey bars are reproductions too, not failures.
+
+The cutoff for calling an effect is **q < 0.1**, Benjamini–Hochberg across the
+164 targeting elements tested for this phenotype, on the resampling p-values.
+Nothing else is a threshold: bar length on its own is not a claim, which is why
+targets called null are drawn hollow however long their bar is.
+
+On that cutoff the 14 reported hits all clear q < 0.05 and the 7 reported
+non-hits all fail it. The closest call is EIF4B: a 1.66× increase in infection
+odds on 111 cells, with a raw p of 0.020 that becomes q = 0.11 once corrected.
+So it is the multiple-testing correction, not the test, that makes it null —
+which is the honest way to describe it, and the one target here where a larger
+screen could plausibly change the answer. It still agrees with the paper, which
+also reports no effect.
+
+---
+
+## 2. Infection calling, and what it rests on
+
+![Figure 2](../results/figures/fig2_infection_qc.png)
 
 The viral fraction of a cell's library is cleanly bimodal, so the
 infected/bystander split does not need a hand-chosen cutoff: a two-component
@@ -24,8 +51,8 @@ Three things are checked rather than assumed.
   size, infected cells still carry far fewer host transcripts (panel b). The
   difference is composition, not sequencing.
 - **The classifier is not depth-driven.** Infected cells are the shallow cells
-  (panel d), which would be alarming if it were an artefact. It is not:
-  binomially downsampling the entire library tenfold changes 0.45% of calls.
+  (panel d), which would matter if it were an artefact. Binomially downsampling
+  the entire library tenfold changes 0.45% of calls, so it is not.
 - **Channels are not interchangeable.** 10x channels 5–8 carry about 1.4× the
   infection rate of channels 1–4 (panel c), reflecting the paper's pulsed and
   non-pulsed conditions. Lane is therefore a stratum in every model and every
@@ -44,8 +71,8 @@ The first three agree almost completely, and the downstream hit list is robust
 to swapping between them (Jaccard 0.74 on the infection hit set; effect-size
 correlation 0.99).
 
-The fourth is reported because honesty requires it, not because it argues the
-published rule is wrong. The rule needs a guide-free uninfected reference, and
+The fourth is reported because it disagrees, not because it shows the published
+rule is wrong. The rule needs a guide-free uninfected reference, and
 the reference that can be reconstructed from the processed GEO matrix is
 contaminated: 11.6% of the cells in it are themselves called infected by the
 mixture. A background mean inflated by real infected cells pushes the threshold
@@ -55,9 +82,9 @@ does not depend on an external reference at all.
 
 ---
 
-## 2. Did the perturbation work?
+## 3. Did the perturbation work?
 
-![Figure 2](../results/figures/fig2_knockdown.png)
+![Figure 3](../results/figures/fig3_knockdown.png)
 
 On-target knockdown is the screen's internal positive control: a CRISPRi element
 that does not lower its own target's mRNA cannot be interpreted, and leaving it
@@ -92,9 +119,9 @@ r = 0.74 that earlier drafts of this repository reported. See
 
 ---
 
-## 3. Hit calling
+## 4. Hit calling
 
-![Figure 3](../results/figures/fig3_viral_hits.png)
+![Figure 4](../results/figures/fig4_viral_hits.png)
 
 Two estimands are kept apart, because a knockdown that blocks entry and one that
 limits replication are different findings.
@@ -151,35 +178,12 @@ exactly this reason; see [statistical_methods.md §5](statistical_methods.md).
 
 ---
 
-## 4. The screen reproduces
-
-![Figure 4](../results/figures/fig4_concordance.png)
-
-**How to read this.** Bar colour is what the *paper* claims; fill is what *we*
-call. "Reproduced" means our call agrees with the paper's, and that includes
-agreeing that a target has no effect — so the grey bars are reproductions too,
-not failures.
-
-The cutoff for calling an effect is **q < 0.1**, Benjamini–Hochberg across the
-164 targeting elements tested for this phenotype, on the resampling p-values.
-Nothing else is a threshold: bar length on its own is not a claim, which is why
-the targets we call null are drawn hollow however long their bar is.
-
-On that cutoff the 14 reported hits all clear q < 0.05 and the 7 reported
-non-hits all fail it. The closest call is EIF4B: a 1.66× increase in infection
-odds on 111 cells, with a raw p of 0.020 that becomes q = 0.11 once corrected.
-So it is the multiple-testing correction, not the test, that makes it null —
-which is the honest way to describe it, and the one target here where a larger
-screen could plausibly change the answer. It still agrees with the paper, which
-also reports no effect.
-
----
-
 ## 5. The interferon panel
 
 ![Figure 5](../results/figures/fig5_isg.png)
 
-Restricted to bystander cells, as in the paper, because infected cells suppress
+Reproducing the paper's **Fig. 5A**, restricted to bystander cells as in the
+paper, because infected cells suppress
 interferon signalling and a mixed population mostly measures each element's
 infected fraction instead. **21 of 170** targeting elements move the bystander
 ISG score at q < 0.1. The ranking is led by the JAK-STAT axis (STAT2,
@@ -189,8 +193,8 @@ at q < 0.01.
 
 Panel b handles a trap the published description leaves open: twelve genes in the
 ISG set are themselves CRISPRi targets in this library, so knocking one down
-mechanically lowers any score containing it. Recomputing without them changes
-nothing material, which is the result you want but not one you can assume.
+mechanically lowers any score containing it. Recomputing the score without those twelve
+genes changes nothing material, but that had to be checked rather than assumed.
 
 ---
 
@@ -240,7 +244,7 @@ infection experiment its variance component is not estimable.
 
 ## 8. Findings that differ from the published account
 
-Reproduction is only useful if the discrepancies are reported too.
+Three places where this reanalysis does not match the published account.
 
 **FURIN knockdown fails.** The paper reports that TMPRSS2 combined with FURIN,
 CTSB or CTSL reduces viral RNA while FURIN or the cathepsins alone do not, and
@@ -249,7 +253,8 @@ knockdown of FURIN** (+6%, −1% and −19% across the three, against a library
 median of 88%). The redundancy interpretation may well be right, but this
 dataset cannot support it: the single-gene FURIN arm is an uninterpretable
 reagent, not a negative result. The same holds for MEPCE (−4%) and LARP1 (−1%).
-This is exactly what the knockdown QC step is for.
+Catching this is the point of measuring per-element knockdown before calling
+hits.
 
 **GPR89B alone does not reproduce; GPR89A does.** The paper reports GPR89A/B
 together. Here GPR89A (rank 9, q < 0.01) and the GPR89A+GPR89B dual element
@@ -267,14 +272,12 @@ dual element is attributable to IRF9.
 
 ## 9. What this design cannot claim
 
-Stated plainly, because it is the thing most likely to be overclaimed in a screen
-reanalysis.
+The limit most easily overclaimed in a screen reanalysis, so stated plainly.
 
 The eight `gem_group` values are 10x channels from a **single infection
 experiment**, not eight independent infections. The resampling null controls for
 cell-level and channel-level sampling noise. It does **not** establish
 reproducibility across independent biological experiments, and no p-value in this
 repository should be read that way. The internal replication that *is* available
-— 12 genes carried by two separately cloned single-guide vectors, which agree at
-r = 0.55 on knockdown — is reported as such, and 0.55 is a modest number that is
-reported rather than improved by pooling.
+— 12 genes carried by two separately cloned single-guide vectors, agreeing at
+r = 0.55 on knockdown — is reported as it comes out.

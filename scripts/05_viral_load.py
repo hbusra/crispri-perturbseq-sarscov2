@@ -134,7 +134,7 @@ def main() -> None:
             )
     ph = pd.DataFrame(rows)
     ph.to_csv(C.tbl("05_paper_hits_descriptive.tsv"), sep="\t", index=False)
-    print("\nthe paper's reported hits, ranked by our infected-fraction effect:")
+    print("\nthe paper's reported hits, ranked by the infected-fraction effect here:")
     print(ph.round(3).to_string(index=False))
 
 

@@ -30,7 +30,7 @@ of the library: the guide pair *is* the reagent.
 
 Two elements hitting the same gene are therefore not automatically two independent
 constructs, and `04_guide_qc.py` keeps the categories apart rather than pooling
-them (`results/tables/04_construct_concordance.tsv`):
+them (`results/tables/02_construct_concordance.tsv`):
 
 | category | n genes | what it is | knockdown agreement |
 |---|---|---|---|
@@ -110,7 +110,7 @@ itself depressed by infection, so conditioning on it means conditioning on the
 outcome. `tests/test_estimators.py::test_offset_choice_changes_the_answer`
 demonstrates the bias on simulated data where the truth is known.
 
-**Sensitivity to the denominator** (`07_offset_sensitivity_summary.tsv`), as rank
+**Sensitivity to the denominator** (`03_offset_sensitivity_summary.tsv`), as rank
 correlation of the per-element effect against the primary specification, and
 overlap of the 20 most negative elements:
 
@@ -162,14 +162,14 @@ column names are now `p_null` / `q_null`.
 
 Two constructions are used, because the two statistics need different ones:
 
-**Phenotype A — lane-matched binomial null** (`_hitcalling_core.mh_null_draws`).
+**Phenotype A — lane-matched binomial null** (`methods.mh_null_draws`).
 For element *e* with n<sub>ℓ</sub> cells in lane ℓ, each draw generates
 a<sub>ℓ</sub> ~ Binomial(n<sub>ℓ</sub>, p̂<sub>ℓ</sub>), where p̂<sub>ℓ</sub> is the
 pooled non-targeting infection rate in that lane, and recomputes the MH odds ratio
 against the observed non-targeting counts.
 
 **Phenotypes B and 3c — non-parametric bootstrap of control cells**
-(`_hitcalling_core.resample_delta_null`). Each draw samples, **with replacement**,
+(`methods.resample_delta_null`). Each draw samples, **with replacement**,
 the same number of cells in each lane as the element has, from that lane's pooled
 non-targeting cells, and recomputes the lane-weighted mean difference.
 

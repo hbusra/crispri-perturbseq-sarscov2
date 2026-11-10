@@ -31,10 +31,10 @@ import statsmodels.api as sm
 from statsmodels.stats.contingency_tables import StratifiedTable
 from statsmodels.stats.multitest import multipletests
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "notebook"))
 
-from _common import bh_fdr  # noqa: E402
-from _hitcalling_core import (  # noqa: E402
+from methods import bh_fdr  # noqa: E402
+from methods import (  # noqa: E402
     lane_weighted_delta,
     mh_log_or,
     mh_null_draws,

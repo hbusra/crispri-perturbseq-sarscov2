@@ -2,7 +2,7 @@
 """
 10 - All figures, built from the tables written by 02-09.
 
-Writes results/figures/fig1..fig7 .png
+Writes results/figures/fig1..fig8 .png
 
 Analysis and plotting are kept apart on purpose: every number drawn here comes
 from a .tsv in results/tables, so a figure can be regenerated, or redrawn
@@ -527,6 +527,79 @@ def figure7():
     print(f"fig7 done (median gene-level profile r = {tab.r_profiles.median():.3f})")
 
 
+
+# =============================== figure 8: the organoid bridge
+def figure_organoid():
+    eff = C.read_tbl("13_infection_effect.tsv")
+    el = C.read_tbl("14_element_signature.tsv")
+
+    fig, axes = plt.subplots(1, 2, figsize=(8.2, 3.7),
+                             gridspec_kw={"width_ratios": [1, 1.15]})
+
+    # (a) the depth lesson
+    ax = axes[0]
+    prog = eff[~eff.program.str.startswith(("random_control", "expr_"))]
+    rc = eff[eff.program.str.startswith("random_control")]
+    y = np.arange(len(prog))
+    band = (rc.delta_depth_matched.min(), rc.delta_depth_matched.max())
+    ax.axvspan(band[0], band[1], color=NEUTRAL, alpha=0.3, zorder=0,
+               label="10 random gene sets, depth-matched")
+    ax.axvline(0, color="#c9c8c3", linewidth=0.9, zorder=1)
+    for i, (_, r) in enumerate(prog.iterrows()):
+        ax.plot([r.delta_raw, r.delta_depth_matched], [i, i], color="#cfced8",
+                linewidth=1.2, zorder=2)
+    ax.scatter(prog.delta_raw, y, s=34, color=ORANGE, zorder=3, label="as measured")
+    ax.scatter(prog.delta_depth_matched, y, s=34, color=BLUE, zorder=4,
+               label="after depth matching")
+    ax.set_yticks(y)
+    ax.set_yticklabels([p.replace("_", " ") for p in prog.program], fontsize=7.2)
+    style(ax, grid_axis="x")
+    ax.legend(loc="lower right", fontsize=6.6)
+    ax.set_xlabel("infected minus bystander, non-targeting cells")
+    ax.set_title("a   The suppression is a capture-depth artefact", loc="left")
+
+    # (b) elements against the two organoid axes
+    ax = axes[1]
+    xcol = "rho_organoid_infection_within_run"
+    ycol = "rho_organoid_drug_in_infected"
+    t = el[~el.is_ntc]
+    n = el[el.is_ntc]
+    sig = t[t.q_organoid_drug_in_infected < 0.1]
+    ax.axhline(0, color=GRID, linewidth=0.8)
+    ax.axvline(0, color=GRID, linewidth=0.8)
+    ax.axhspan(n[ycol].min(), n[ycol].max(), color=NEUTRAL, alpha=0.25, zorder=0)
+    ax.scatter(t[xcol], t[ycol], s=16, color="#cfced8", edgecolor="white",
+               linewidth=0.4, zorder=2)
+    ax.scatter(sig[xcol], sig[ycol], s=30, color=AQUA, edgecolor="white",
+               linewidth=0.6, zorder=3)
+    ax.scatter(n[xcol], n[ycol], s=22, color=INK2, marker="D", zorder=4)
+    for lab, dx, dy in [("KEAP1", 7, 1), ("SPNS1", 8, -8), ("STAT2", 7, 3),
+                        ("GPR89A", 7, -7), ("BRD2", 7, 1), ("IRF9+IRF3", 7, 4),
+                        ("TYK2", -26, 4)]:
+        r = sig[sig.target == lab]
+        if len(r):
+            ax.annotate(lab, (r[xcol].iloc[0], r[ycol].iloc[0]),
+                        textcoords="offset points", xytext=(dx, dy),
+                        fontsize=6.8, color=INK)
+    style(ax, grid_axis="both")
+    ax.set_xlabel("resembles the organoid infection signature")
+    ax.set_ylabel("resembles the organoid drug signature")
+    ax.set_title("b   Interferon knockdowns phenocopy the drug", loc="left")
+    ax.legend(handles=[
+        Line2D([], [], marker="o", color=AQUA, linestyle="", markersize=6,
+               label="q < 0.1 vs the control band"),
+        Line2D([], [], marker="D", color=INK2, linestyle="", markersize=5,
+               label="non-targeting elements"),
+    ], loc="lower left", fontsize=6.6)
+
+    fig.suptitle("Figure 8   The screen against the lung-organoid signatures",
+                 x=0.005, ha="left", fontsize=10.5, fontweight="semibold")
+    fig.tight_layout(rect=(0, 0, 1, 0.92))
+    fig.savefig(fig_path("fig8_organoid_bridge.png"))
+    plt.close(fig)
+    print("fig8 (organoid bridge) done")
+
+
 if __name__ == "__main__":
     figure_concordance()      # Figure 1: does the screen reproduce?
     figure_infection_qc()     # Figure 2: is the phenotype real?
@@ -535,4 +608,5 @@ if __name__ == "__main__":
     figure5()
     figure6()
     figure7()
+    figure_organoid()
     print(f"\nfigures written to {C.FIGURES}")

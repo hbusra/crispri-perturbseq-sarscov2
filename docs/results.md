@@ -281,3 +281,79 @@ reproducibility across independent biological experiments, and no p-value in thi
 repository should be read that way. The internal replication that *is* available
 — 12 genes carried by two separately cloned single-guide vectors, agreeing at
 r = 0.55 on knockdown — is reported as it comes out.
+
+---
+
+## 10. The band between the two viral-load modes
+
+Viral load is bimodal, but 2,696 cells (9.7%) sit between the modes, at viral
+fractions of 0.6–1.4% where the bystander mode tops out at 0.5%. A binary
+classifier has to put them somewhere, and the paper notes that several proviral
+knockdowns deplete two *bystander* clusters, read as possibly "very early
+infection, defective particles, or suppressed viral transcription" without
+resolving which. `scripts/12_borderline_cells.py` resolves it with four tests,
+each a prediction only one explanation satisfies.
+
+| test | ambient RNA predicts | early infection predicts | result |
+|---|---|---|---|
+| does the cell's own guide matter? | no | yes | entry-factor knockdowns deplete the band (TMPRSS2+CTSL q = 0.04, TMPRSS2+FURIN q = 0.05); effects correlate with the established-infection effect at r = 0.39 |
+| viral transcript composition | same mix as infected cells | relatively more genomic ORF1ab | ORF1ab : N ratio 0.100 in the band vs 0.068 in infected cells |
+| host response at matched depth | none | shutoff beginning, stress genes up | no shutoff yet (host UMI as in bystanders), NF-κB / immediate-early score 0.6–1.1 against 0.07–0.34 in bystanders and 1.0–4.3 in infected cells |
+| doublets? | — | — | genes detected at matched library size are the same as bystanders, so not doublets |
+
+So the band is early infection caught before shutoff. The practical consequence
+is small and worth stating: folding it into the bystander pool, as a binary
+classifier must, leaves the published interferon result intact (effect sizes
+r = 0.997, 23 of 25 hits shared, all four novel hits unchanged).
+
+---
+
+## 11. The organoid comparison
+
+The question, the depth lesson and the result are in the
+[README](../README.md#3-using-the-screen-on-a-question-from-the-organoid-work).
+What belongs here is the detail behind them.
+
+![Figure 8](../results/figures/fig8_organoid_bridge.png)
+
+**Programme scores, before and after depth matching** (`13_infection_programs.py`,
+non-targeting cells only, infected minus bystander):
+
+| programme | as measured | depth-matched | z vs 10 random gene sets |
+|---|---|---|---|
+| lysosome | −0.66 | −0.05 | −0.5 |
+| v-ATPase | −0.68 | −0.06 | −0.6 |
+| mTORC1 | −0.46 | −0.10 | −1.1 |
+| autophagy elongation | −0.26 | +0.04 | +0.9 |
+| autophagy initiation | −0.06 | +0.07 | +1.3 |
+| PIP4K2C transcript | +0.03 | −0.03 | −0.1 |
+
+The random sets span −0.14 to +0.11 after matching, so nothing here separates
+from an arbitrary gene set. (An earlier version of this analysis, run without the
+≥ 1,500 host-UMI restriction, put the raw lysosomal difference at −0.75 and
+reported a residual mTORC1 effect; on the matched cell set that residual is
+inside the control band too.)
+
+**Signature matching** (`14_organoid_signature_match.py`): each element's
+bystander profile, at a common host depth of 5,000 UMI, Spearman-correlated with
+each organoid signature over the genes that signature moves (|LFC| ≥ 0.5), with
+p-values taken against the spread of the 20 non-targeting elements rather than
+against zero.
+
+| organoid signature | genes compared | elements separating from the control band |
+|---|---|---|
+| drug vs vehicle in infected cells, 24 h | 576 strong | **17** |
+| infection, within run, 24 h | 888 strong | 7 |
+| infection under drug | 2,155 strong | 0 |
+| infection, cross-run (as used in the paper) | 2,304 strong | **0** |
+
+Across all elements the two axes anticorrelate at r = −0.58: a perturbation that
+looks like infection opposes the drug. The autophagy–endolysosomal elements are
+flat against the infection signature, the best being ATG14 and SPNS1 at q = 0.10.
+
+**What this is not.** A correlation of transcriptional profiles between a cell
+line and an organoid culture is a hypothesis-generating comparison. It does not
+establish a shared mechanism, it does not make any of these genes a drug target,
+and because PIP4K2C is absent from the library it says nothing directly about
+that target.
+

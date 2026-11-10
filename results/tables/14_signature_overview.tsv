@@ -1,0 +1,5 @@
+signature	source_column	n_genes	n_strong	median_abs_lfc
+organoid_infection_within_run	W3_within_run3_24h_infDMSO_VHC_vs_zero	5804	888	0.20955877336317424
+organoid_infection_under_drug	W4_within_run3_24h_RMC_VHC_vs_zero	5519	2155	0.3779637377125819
+organoid_drug_in_infected	P6_24h_RMC_vs_DMSO_inf(run3)	5684	576	0.17580295142519595
+organoid_infection_cross_run	P4_24h_inf(run3)_vs_uninf(run1)_DMSO [paper]	5775	2304	0.3888136711874779

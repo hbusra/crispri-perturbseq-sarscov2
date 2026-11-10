@@ -117,6 +117,20 @@ unchanged by using detected-gene count instead (ρ = 0.97), degraded by total UM
 (ρ = 0.87), and badly degraded by dropping the offset and stratifying on depth
 bands instead (ρ = 0.56).
 
+### Lane as a random intercept instead of a stratum
+
+Lane is a fixed effect (a stratum) in the primary estimator. Fitting the
+alternative — a per-element binomial GLMM with a lane random intercept,
+`11_mixed_effects.py` — gives effect sizes correlated with the MH estimates at
+**r = 0.9999** (median |difference| 0.006 log OR), 28 hits against 30, and 27
+shared. The fitted lane SD is 0.33 on the log-odds scale, so the lane effect is
+real; it simply does not matter how it is modelled, because the lanes are large
+and every element's cells are spread across all eight. The stratified estimator
+stays primary because it assumes less about the distribution of lane effects and
+is the statistic the resampling null is built around. The random effect is over
+10x channels, not infection experiments, so it adds no biological replication —
+see [statistical_methods.md §9](statistical_methods.md).
+
 ### The null
 
 Significance comes from a control-based resampling null, not from a Wald

@@ -61,20 +61,10 @@ autophagy–endolysosomal module, which makes two questions answerable.
 
 ![Figure 8](results/figures/fig8_organoid_bridge.png)
 
-**Does infection suppress that module transcriptionally in Calu-3, as it does in
-the organoids?** Taken as measured, emphatically yes — lysosomal, v-ATPase and
-mTORC1 scores all drop sharply in infected cells. That signal does not survive
-depth matching. Infected Calu-3 cells carry 9.4× fewer host UMIs than bystanders,
-and once every cell is downsampled to a common depth the programme differences
-fall inside the band spanned by ten random gene sets. The organoid data has the
-same artefact with the opposite sign — there the viral-RNA-harbouring cells are
-the deeper ones — which is a good argument for making cross-system claims on
-perturbation effects rather than on infected-versus-bystander contrasts.
-
 **Which perturbations move Calu-3 cells along the organoid signatures?** Each
-element's profile, measured in bystander cells against non-targeting bystanders
-at matched depth, correlated with the organoid signatures, with the null built
-from the 20 control elements. 17 elements separate from that null on the drug
+element's transcriptional profile, measured in bystander cells against
+non-targeting bystander cells, correlated with the organoid signatures, with the
+null built from the 20 control elements rather than from zero. 17 elements separate from that null on the drug
 signature, and 15 of them are one axis: KEAP1 (ρ = 0.52), IRF9+IRF3, STAT2,
 SPNS1, TYK2, IFNAR1/2, GPR89A/B, STAT1, BRD2. Knocking down interferon signalling
 in Calu-3 reproduces the direction the drug moves infected organoid cells — and
@@ -89,9 +79,10 @@ KEAP1 — oxidative-stress signalling rather than the JAK-STAT core — at the t
 Two negatives are worth as much. The autophagy–endolysosomal module shows no
 match to the organoid infection signature (best q = 0.10), which is what you
 expect if the mechanism is post-transcriptional, as the organoid paper argues
-from flux and protein half-lives. And the cross-run infection contrast matches
-nothing at all while the within-run one matches seven elements, so the batch
-effect there does not merely add noise, it removes the signal.
+from flux measurements and protein half-lives rather than from transcript
+levels. And the cross-run infection contrast matches nothing at all while the
+within-run one matches seven elements, so the batch effect there does not merely
+add noise, it removes the signal.
 
 ---
 
@@ -142,7 +133,6 @@ scripts/
   10_figures.py                                   every figure, from the tables only
   11_mixed_effects.py                             lane random intercept vs stratification
   12_borderline_cells.py                          what the ambiguous band is
-  13_infection_programs.py                        autophagy programmes, depth-matched
   14_organoid_signature_match.py                  elements against the organoid signatures
 notebooks/   qc.ipynb, sensitivity.ipynb
 docs/        results.md, statistical_methods.md, RUNBOOK.md
@@ -158,7 +148,7 @@ bash scripts/00_download.sh data/raw            # ~1.2 GB from GEO
 python scripts/01_build_anndata.py --raw data/raw --out data
 for s in 02_qc 03_infection 04_guide_qc 05_viral_load 06_isg 07_hit_calling \
          08_representation 09_infected_vs_bystander 10_figures 11_mixed_effects \
-         12_borderline_cells 13_infection_programs; do
+         12_borderline_cells; do
     python scripts/$s.py
 done
 python -m pytest tests -q                       # 12 estimator tests, ~10 s

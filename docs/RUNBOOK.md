@@ -145,9 +145,6 @@ entry-factor knockdowns deplete them, ORF1ab:N ratio 0.100 vs 0.068 in infected
 cells, no shutoff at matched depth. The published interferon result is unchanged
 by how they are classified.
 
-**13_infection_programs** — autophagy/lysosome programme scores, raw and after
-downsampling every cell to 1,500 host UMI, against ten random gene sets.
-
 **14_organoid_signature_match** — needs the organoid DE tables, which are not
 public; 17 elements match the drug signature, 0 match the cross-run infection
 signature.

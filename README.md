@@ -1,90 +1,92 @@
-# A guide-aware QC and hit-calling workflow for pooled single-cell perturbation screens
+# CRISPRi Perturb-seq: QC and hit calling on a SARS-CoV-2 host-factor screen
 
 [![tests](https://github.com/hbusra/crispri-perturbseq-sarscov2/actions/workflows/tests.yml/badge.svg)](https://github.com/hbusra/crispri-perturbseq-sarscov2/actions/workflows/tests.yml)
 
-An independently written pipeline for QC'ing and calling hits in a CRISPRi
-Perturb-seq screen, validated by reproducing a published screen of SARS-CoV-2
-host factors in Calu-3 cells ([Sunshine et al., *Nature Communications* 14, 2023](https://doi.org/10.1038/s41467-023-41788-4);
-data [GSE208240](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE208240)).
+I reanalysed the Calu-3 CRISPRi Perturb-seq screen of SARS-CoV-2 host factors
+from [Sunshine et al., *Nature Communications* 14 (2023)](https://doi.org/10.1038/s41467-023-41788-4),
+starting from the processed count matrix in [GSE208240](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE208240)
+and writing the QC and hit-calling code from scratch. Two reasons: to check
+whether the published calls hold up under a different statistical approach, and
+to build the per-element QC I would want on any pooled screen before trusting
+its hit list.
 
-**Three headline findings**
+27,882 cells with a guide assignment, 237 library elements (22 non-targeting),
+eight 10x channels, one infection experiment.
 
-1. **The screen reproduces.** All 21 of the published viral-load calls come back
-   in the right direction — the 14 reported hits at q < 0.05 and the 7 reported
-   non-hits failing q < 0.1 — using a different statistical approach from the
-   original. All four of the paper's novel interferon hits return at q < 0.01
-   (KEAP1, SPNS1, BRD2, and GPR89A/B via the GPR89A element and the
-   GPR89A+GPR89B dual element), as does the canonical JAK-STAT axis. The one
-   element-level exception is **GPR89B on its own, which does not reproduce**
-   (rank 131 of 190); the paper reports the paralogue pair together.
-2. **One published arm rests on a reagent that does not work.** The FURIN
-   elements show **no knockdown of FURIN** (+6% to −19%, against a library median
-   of 88%), so the single-gene FURIN arm of the protease-redundancy argument is
-   uninterpretable rather than negative. The same holds for MEPCE and LARP1.
-3. **The screen's internal reproducibility is more modest than it looks.** The 12
-   genes carried by two separately cloned vectors agree at r = 0.55 on knockdown.
-   Pooling them with pairs that share guide design inflates this to r = 0.74,
-   which is the kind of number worth not quoting.
+## What I found
 
-![Figure 4](results/figures/fig4_concordance.png)
+**1. The published viral-load calls reproduce.** All 21 calls in the paper's
+Fig. 3A come back in the right direction: the 14 reported hits at q < 0.05 and
+the 7 reported non-hits failing q < 0.1. The interferon panel (paper Fig. 5A)
+reproduces too — all four novel hits at q < 0.01 (KEAP1, SPNS1, BRD2, and
+GPR89A/B through the GPR89A and GPR89A+GPR89B elements) along with the JAK-STAT
+axis. One element-level exception: GPR89B on its own does nothing here (rank 131
+of 190), while its paralogue GPR89A is rank 9. The paper reports the pair
+together.
 
-Bar colour is what the *paper* claims; fill is what *we* call. Agreeing that a
-target has **no** effect is a reproduction too, so the grey bars count.
+![Figure 1](results/figures/fig1_concordance.png)
 
----
+**2. The FURIN element never knocks FURIN down.** Across the three elements
+carrying FURIN, target mRNA changes by +6% to −19% against a library median
+knockdown of 88%. The paper uses FURIN-alone as a negative result in its
+protease-redundancy argument; on this data that arm is an uninterpretable
+reagent rather than a negative. MEPCE and LARP1 have the same problem. This is
+the first thing I check on a screen and the reason I check it.
 
-## The question
+**3. Internal reproducibility is weaker than a pooled number suggests.** Twelve
+genes in this library are carried by two separately cloned single-guide vectors.
+Those 12 pairs agree at r = 0.55 on knockdown. Pooling them with pairs that
+share guide design gives r = 0.74, which measures the same reagent twice as much
+as it measures reproducibility, so I report the 12.
 
-> How reliably can we identify perturbations that change an infection phenotype
-> in a pooled single-cell screen, and how do we know the hits are real?
+## How hits are called
 
-Three things have to be true before a hit list means anything, and each gets its
-own script:
+Three questions had to be answered before I would use any hit list from this
+screen:
 
-| | Question | Script | Answer here |
+| | Question | Script | Answer |
 |---|---|---|---|
-| 1 | Did the perturbation work? | `04_guide_qc.py` | median 88% on-target knockdown; 76% of element–gene pairs clear 75%; **FURIN does not knock down at all** |
-| 2 | Is the phenotype real, or a measurement artefact? | `03_infection.py` | three independent classifiers agree ≥ 99.3%; calls stable to 10× downsampling |
-| 3 | Is the effect bigger than control-to-control noise? | `07_hit_calling.py` | lane-matched resampling null from the non-targeting controls; calibrated on controls **per phenotype** (infection 0/20 at p < 0.1, burden 3/21, bystander ISG 3/20, against 10% expected) |
+| 1 | Did the perturbation work? | `04_guide_qc.py` | median 88% on-target knockdown; 76% of element–gene pairs clear 75%; FURIN, MEPCE and LARP1 do not knock down |
+| 2 | Is the phenotype real or a depth artefact? | `03_infection.py` | three threshold-free classifiers agree ≥ 99.3%; calls stable to 10× downsampling |
+| 3 | Is the effect bigger than control-to-control noise? | `07_hit_calling.py` | lane-matched resampling null from the non-targeting cells; controls checked per phenotype (infection 0/20 at p < 0.1, burden 3/21, ISG 3/20, against 10% expected) |
 
-## Methods in brief
+The analysis choices that matter most:
 
-- **Infection state** from a two-component mixture on log10 viral fraction
-  (29.2% infected, 61.1% bystander, 9.7% borderline and excluded), cross-checked
-  against three other rules including the paper's own.
-- **Two estimands, kept apart.** Infection *establishment* is a Mantel–Haenszel
-  odds ratio stratified by 10x channel (30 of 164 elements at q < 0.1). Viral
-  *burden given infection* is a negative-binomial GLM with `log(host UMI)` as an
-  offset (5 of 149). The offset is never total UMI, which contains the outcome.
-- **Blocking.** 10x channels 5–8 carry 1.4× the infection rate of channels 1–4,
-  so lane is a stratum in every model and every null. Treating lane as a
-  **random intercept instead** (`11_mixed_effects.py`, a per-element binomial
-  GLMM) changes essentially nothing: effect sizes correlate at r = 0.9999 and
-  27 of 30 hits are shared. The fixed-effect stratified estimator is kept
-  because it assumes less; the GLMM is a sensitivity check, and it is a *lane*
-  random effect, not a biological one.
-- **Significance** from a control-based resampling null: 2,000 lane-matched
-  pseudo-elements drawn from the pooled non-targeting cells. This is not a
-  permutation of perturbation labels, and
-  [docs/statistical_methods.md](docs/statistical_methods.md) says exactly what
-  it is.
-- **Knockdown** measured in bystander cells only, pseudobulk, because shutoff in
-  infected cells flatters every ratio.
+- **Infection state** comes from a two-component mixture on log10 viral fraction
+  (29.2% infected, 61.1% bystander, 9.7% borderline and dropped). Three other
+  rules are run alongside it, including the paper's own.
+- **Two phenotypes, kept separate.** Whether a cell gets infected at all is a
+  Mantel–Haenszel odds ratio stratified by 10x channel (30 of 164 elements at
+  q < 0.1). How much virus an infected cell carries is a negative-binomial GLM
+  with `log(host UMI)` as the offset (5 of 149). The offset is host UMI, never
+  total UMI: total UMI contains the viral counts being modelled and is itself
+  pushed down by shutoff, so using it means conditioning on the outcome.
+- **Lane is a blocking factor, not noise.** Channels 5–8 carry 1.4× the
+  infection rate of channels 1–4, matching the paper's pulsed and non-pulsed
+  conditions. Fitting lane as a random intercept instead
+  (`11_mixed_effects.py`) gives the same answers (r = 0.9999 on effect sizes,
+  27 of 30 hits shared), so the stratified estimator stays primary.
+- **Significance** comes from resampling the control cells: 2,000
+  lane-matched pseudo-elements per element, drawn from the pooled non-targeting
+  pool. It is not a permutation of perturbation labels, and
+  [docs/statistical_methods.md](docs/statistical_methods.md) spells out what it
+  does instead.
+- **Knockdown** is measured in bystander cells only. Infected cells have lost
+  most of their host mRNA to NSP1 shutoff, which makes every knockdown ratio
+  look better than it is.
 
-**Full results, figures and discrepancies:** [docs/results.md](docs/results.md).
-**Estimands, nulls, testing families and sensitivity analyses:** [docs/statistical_methods.md](docs/statistical_methods.md).
+Everything else — all seven figures, the discrepancies with the paper, the
+sensitivity analyses — is in [docs/results.md](docs/results.md).
 
-## What this design cannot claim
+## What this screen cannot answer
 
-The eight `gem_group` values are 10x channels from a **single infection
-experiment**, not eight independent infections. The resampling null controls for
-cell-level and channel-level sampling noise; it does **not** establish
-reproducibility across independent biological experiments, and no p-value here
-should be read that way. 47 of 237 elements fall below the 55-cell cut, mostly
-essential genes whose knockdown kills cells, so their absence from the hit list
-is a systematic gap rather than evidence of no effect.
-
----
+The eight `gem_group` values are 10x channels from one infection experiment, not
+eight infections. The resampling null covers cell- and channel-level sampling
+noise and nothing above that, so none of these p-values speak to whether the
+screen would replicate in a second infection. Separately, 47 of 237 elements
+have fewer than 55 cells, mostly essential genes whose knockdown kills cells;
+those targets are missing from the hit list for a systematic reason, not because
+they were tested and found null.
 
 ## Repository layout
 
@@ -95,28 +97,27 @@ scripts/
   02_qc.py                    cell QC, lane structure, element representation
   03_infection.py             infection classification (4 rules) + depth sensitivity
   04_guide_qc.py              on-target knockdown, construct concordance
-  05_viral_load.py            descriptive reproduction of the published Fig. 3A
-  06_isg.py                   reproduction of the published Fig. 5
+  05_viral_load.py            descriptive reproduction of the paper's Fig. 3A
+  06_isg.py                   reproduction of the paper's Fig. 5A
   07_hit_calling.py           MH odds ratios, NB GLM, control resampling null, FDR
   08_representation.py        subsampling curves, resolution, underpowered elements
-  09_infected_vs_bystander.py the extension
-  10_figures.py               every figure, drawn from the tables only
+  09_infected_vs_bystander.py do perturbation effects survive infection?
+  10_figures.py               the figures
   11_mixed_effects.py         lane random-intercept GLMM vs the stratified estimator
   _common.py                  paths, gene sets, BH-FDR
-  _hitcalling_core.py         the estimators and nulls shared by 07 and 08
+  _hitcalling_core.py         estimators and nulls shared by 07 and 08
 tests/
   test_estimators.py          12 tests: MH vs statsmodels, NB recovery, null calibration
 docs/
-  results.md                  every figure, the discrepancies, the limitations
-  statistical_methods.md      estimands, nulls, and what each one licenses
-  RUNBOOK.md                  every command, in order, with expected output
-results/tables/               every number in this repository, as .tsv
+  results.md                  all seven figures, the discrepancies, the limits
+  statistical_methods.md      estimands, nulls, testing families, sensitivity checks
+  RUNBOOK.md                  every command in order, with the output to expect
+results/tables/               every number quoted anywhere here, as .tsv
 results/figures/              the figures
 ```
 
-Analysis and plotting are kept apart: `10_figures.py` reads only from
-`results/tables/`, so any figure can be regenerated or redrawn without rerunning
-a single statistic.
+`10_figures.py` reads only the tables in `results/tables/`, so a figure can be
+redrawn without rerunning any statistics.
 
 ## Running it
 
@@ -132,19 +133,18 @@ done
 python -m pytest tests -q                       # 12 estimator tests, ~10 s
 ```
 
-About 14 minutes end to end on 4 cores, of which 11 are the one-off parse of the
-337-million-entry matrix in `01`; that result is cached, so every rerun of the
-analysis is under 3 minutes. Peak memory is about 6 GB, also in `01`. See
-[docs/RUNBOOK.md](docs/RUNBOOK.md) for the step-by-step version with the expected
-output at each stage.
+About 14 minutes on 4 cores, 11 of which are the one-off parse of the
+337-million-entry matrix in `01`. That result is cached, so reruns take under 3
+minutes. Peak memory ~6 GB, also in `01`.
+[docs/RUNBOOK.md](docs/RUNBOOK.md) lists each step with the numbers it should
+print.
 
 ## Data
 
-Raw and processed data are from GEO [GSE208240](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE208240),
-deposited by the authors of the original study. Nothing in `data/` is committed.
-The authors' own per-cell guide assignments (`cell_identities.csv`) are used as
-the starting point, so this is a reanalysis from the processed matrix rather than
-from FASTQs.
+Everything comes from GEO [GSE208240](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE208240),
+deposited by the authors of the original study; nothing in `data/` is committed.
+I start from their per-cell guide assignments (`cell_identities.csv`), so this is
+a reanalysis from the processed matrix, not from FASTQs.
 
 If you use the data, cite the original study:
 
@@ -156,7 +156,6 @@ If you use the data, cite the original study:
 
 ## Licence
 
-Code in this repository is MIT licensed (see [LICENSE](LICENSE)). That covers the
-code only: the GSE208240 data and the original publication's figures remain under
-their own terms, and the reproduction above is of published results that belong
-to their authors.
+Code here is MIT licensed (see [LICENSE](LICENSE)). That covers the code only:
+the GSE208240 data and the original figures stay under their own terms, and the
+results being reproduced belong to their authors.

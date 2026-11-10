@@ -7,7 +7,7 @@ Writes
     results/tables/07_hits_infection.tsv       infected-fraction phenotype
     results/tables/07_hits_burden.tsv          viral-burden phenotype
     results/tables/07_null_calibration.tsv     NTC-vs-NTC false-positive rate
-    results/tables/07_concordance.tsv          our calls vs the paper's
+    results/tables/07_concordance.tsv          calls here vs the paper's
     results/tables/07_robustness.tsv           same calls under a different classifier
 
 The two estimands
@@ -362,7 +362,7 @@ def main() -> None:
         f"{int(hits.agrees.sum())}/{len(hits)}"
     )
     print(
-        f"  published non-hits we also call ns: {int(nulls.agrees.sum())}/{len(nulls)}"
+        f"  published non-hits also called ns here: {int(nulls.agrees.sum())}/{len(nulls)}"
     )
 
     # ------------------------------------------------------------- robustness

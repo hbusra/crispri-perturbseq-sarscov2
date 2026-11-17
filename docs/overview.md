@@ -4,9 +4,10 @@ A reanalysis of the Calu-3 CRISPRi Perturb-seq screen of SARS-CoV-2 host factors
 ([Sunshine et al., *Nat Commun* 14, 2023](https://doi.org/10.1038/s41467-023-41788-4),
 GEO [GSE208240](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE208240)):
 27,882 guide-assigned cells, 237 library elements, eight 10x channels, one
-infection experiment. Three things, in order — reproduce the published calls,
-test the ones that do not hold, and use the perturbation data against signatures
-from my own SARS-CoV-2 lung organoid work.
+infection experiment. I came to it from the organoid side: I work on SARS-CoV-2
+in lung organoids and wanted to know whether a published Calu-3 screen could say
+anything about the programs I see there. Reproducing the paper's calls came
+first, and the problems below turned up on the way.
 
 ---
 
@@ -37,12 +38,12 @@ self-fulfilling.
 → [notebook/04_interferon](../notebook/04_interferon.ipynb) ·
 [04_isg_by_element.tsv](../results/tables/04_isg_by_element.tsv)
 
-### 3. One reagent in the paper's argument does not work
+### 3. One of the reagents does not work
 
 The elements carrying FURIN move FURIN by +6% to −19%, against a library median
 of 88% knockdown. The paper's protease-redundancy argument reads the single-gene
-FURIN arm as a negative result; an element that does not knock its gene down
-cannot support one. MEPCE and LARP1 are the same.
+FURIN arm as a negative result, and a reagent that does not knock the gene down
+cannot carry that. MEPCE and LARP1 look the same.
 
 The same notebook shows that "two elements per gene" is not two independent
 reagents: the 12 genes carried by separately cloned single-guide vectors agree at
@@ -96,9 +97,9 @@ would expect if that mechanism is post-transcriptional.
 | Infection calling, four classifiers | effect sizes agree at r = 0.99; 23 of 31 hits called under both | [notebook/01](../notebook/01_qc_and_infection_calling.ipynb) |
 | Host shutoff vs lost sequencing depth | shutoff: infected cells carry fewer host UMIs at matched library size | [notebook/01](../notebook/01_qc_and_infection_calling.ipynb) |
 | Choice of denominator for burden | holds under host genes and a no-offset depth band; only total UMI drifts | [notebook/03](../notebook/03_hit_calling.ipynb) |
-| Lane as random intercept, not stratum | r = 0.9999, hit-list Jaccard 0.87 | [notebook/08](../notebook/08_sensitivity_mixed_effects.ipynb) |
+| Lane as a random intercept instead of a stratum | r = 0.9999, hit-list Jaccard 0.87 | [notebook/08](../notebook/08_sensitivity_mixed_effects.ipynb) |
 | What the screen can resolve | the weakest real hits are detected in 20-45% of subsamples at 60-120 cells | [notebook/05](../notebook/05_coverage_and_resolution.ipynb) |
-| Cells between the two modes | early infection, not doublets; published ISG result unaffected | [notebook/06](../notebook/06_infection_state.ipynb) |
+| Cells between the two modes | look like early infection rather than doublets; published ISG result unaffected | [notebook/06](../notebook/06_infection_state.ipynb) |
 | Estimators against statsmodels and simulation | 12 tests, run in CI | [tests/test_estimators.py](../tests/test_estimators.py) |
 
 Methods — estimands, nulls, testing families — are in

@@ -1,14 +1,12 @@
 # Statistical methods
 
-What is estimated, against what null, and what each result licenses you to say.
+Notes on what each number is, how its p-value was built, and what it does not cover.
 
 ---
 
 ## 1. The experimental unit
 
-The unit is the **library element**, not the cell and not the gene.
-
-A cell is not an independent replicate: cells sharing an element share a lentiviral
+Everything here is estimated per **library element**. A cell is not an independent replicate: cells sharing an element share a lentiviral
 integration history, a selection history and a droplet batch. Treating 27,882 cells
 as 27,882 replicates is the commonest way a Perturb-seq analysis manufactures
 significance.
@@ -29,7 +27,7 @@ dual-guide vector, the usual split-guide concordance check is unavailable for mo
 of the library: the guide pair *is* the reagent.
 
 Two elements hitting the same gene are therefore not automatically two independent
-constructs, and `04_guide_qc.py` keeps the categories apart rather than pooling
+constructs, and `notebook/02_knockdown` keeps the categories apart rather than pooling
 them (`results/tables/02_construct_concordance.tsv`):
 
 | category | n genes | what it is | knockdown agreement |
@@ -48,11 +46,11 @@ in error.
 Twelve genes is a small panel, and the honest reading of r = 0.55 with a median
 absolute difference of 15 percentage points is that **knockdown efficiency varies
 materially between independently cloned guides against the same gene**. That is a
-reason to treat element-level, not gene-level, results as primary.
+reason to treat the element-level results as the primary ones.
 
 ## 2. Blocking: the 10x channel
 
-`gem_group` runs 1–8 and is a real experimental factor, not a label. Channels 5–8
+`gem_group` runs 1–8 and is a real experimental factor rather than a bookkeeping label. Channels 5–8
 show about 1.4× the infection rate and about 1.8× the median viral fraction of
 channels 1–4, reflecting the paper's pulsed and non-pulsed infection conditions,
 which it combined after finding no significant difference between them.
@@ -127,7 +125,7 @@ an artefact of how host capture is measured. The depth-band row is weak evidence
 either direction and is reported rather than hidden: restricting to a two-fold band
 keeps 3,126 of 8,136 infected cells and only 289 non-targeting ones, so roughly half
 the elements become unfittable and the rest are estimated on a fraction of the data.
-It is underpowered, not contradictory.
+So this row is mostly a power problem; it is not evidence against the primary fit.
 
 Keeping 3a and 3b apart matters: a knockdown that blocks entry moves 3a; one that
 limits replication moves 3b. ACE2 and TMPRSS2 move 3a sharply and leave too few
@@ -155,10 +153,10 @@ A Wald p-value from any model above assumes cells are independent. They are not
 (§1). Significance therefore comes from a **control-based null** built from the 22
 non-targeting elements.
 
-**This is not a permutation of perturbation labels.** No label is shuffled. The
-procedure constructs synthetic null elements out of control cells. Earlier drafts
-of this repository called it a "permutation null"; that was imprecise, and the
-column names are now `p_null` / `q_null`.
+No labels are shuffled anywhere in this. The procedure builds synthetic null
+elements out of control cells. Earlier drafts of this repository called it a
+"permutation null", which was the wrong name, so the columns are now
+`p_null` / `q_null`.
 
 Two constructions are used, because the two statistics need different ones:
 
@@ -173,7 +171,7 @@ against the observed non-targeting counts.
 the same number of cells in each lane as the element has, from that lane's pooled
 non-targeting cells, and recomputes the lane-weighted mean difference.
 
-Answering the specific questions an interviewer will ask:
+The resampling details, since they are easy to get wrong:
 
 | question | answer |
 |---|---|
@@ -225,7 +223,7 @@ published-list comparison is a lookup of 21 named targets, not a separate test.
 
 ## 6. Coverage and resolution
 
-`08_representation.py` reports, from the null alone, the smallest odds ratio
+`notebook/05_coverage_and_resolution` reports, from the null alone, the smallest odds ratio
 separable from zero at a given cell count: 2.42× at 25 cells, 1.73× at 60, 1.48× at
 120, 1.31× at 240.
 
@@ -244,17 +242,19 @@ about those targets.
 
 ## 7. What this design cannot support
 
-- **No claim of biological reproducibility.** The eight channels are 10x lanes from
-  one infection experiment. The null controls cell- and lane-level sampling noise.
+Things this repository does not claim, and why:
+
+- **Biological reproducibility.** The eight channels are 10x lanes from one
+  infection experiment. The null controls cell- and lane-level sampling noise.
   It says nothing about whether the screen would replicate in a second infection.
-- **No mixed-effects model with a biological random effect**, for the same reason:
-  no grouping factor above the lane has an estimable variance. A *lane* random
+- **A biological random effect**, for the same reason: no grouping factor above
+  the lane has an estimable variance. A *lane* random
   intercept is estimable and is fitted as a sensitivity check (§9); a random
   effect for infection experiment is not, because there is one.
-- **No formal power analysis.** §6 describes this screen's resolution given its
-  coverage, not power for a future experiment.
-- **No unbiasedness claim** from the subsampling in §6; see the wording there.
-- **No causal claim from the extension.** `09_infected_vs_bystander.py` compares
+- **Formal power analysis.** §6 describes this screen's resolution at the coverage
+  it has, which is not the same as power for a future experiment.
+- **Unbiasedness** of the subsampling in §6; see the wording there.
+- **Causal claims from the extension.** `notebook/06_infection_state` compares
   effect profiles between infection states descriptively. An interaction test needs
   a perturbation-by-state term and a variance component this design does not
   provide.
@@ -273,7 +273,7 @@ calibration of both null constructions on data generated under the null.
 
 Hits are called with lane as a **stratum**, i.e. a fixed effect, in a
 Mantel–Haenszel odds ratio. The obvious alternative is to let the eight lane
-effects shrink toward a common mean. `11_mixed_effects.py` fits that model, per
+effects shrink toward a common mean. `notebook/08_sensitivity_mixed_effects` fits that model, per
 element, on the element's cells pooled with all non-targeting cells:
 
     logit P(infected) = b0 + b1 · perturbed + u_lane ,   u_lane ~ N(0, s²)

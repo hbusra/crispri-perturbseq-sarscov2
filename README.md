@@ -6,45 +6,50 @@ from Sunshine et al., *Nat Commun* 14 (2023), GEO
 starting from the processed count matrix: 27,882 cells with a guide assignment,
 237 library elements, eight 10x channels, one infection experiment.
 
-Three things, in order: reproduce the published calls, test the ones that do not
-hold up, and use the perturbation data against signatures from my own
-SARS-CoV-2 lung organoid work.
+I went looking for a Perturb-seq screen in Calu-3 cells because I work on
+SARS-CoV-2 in lung organoids and wanted to see whether a published screen could
+say anything about the programs I see there. Reproducing the paper's calls came
+first; the reagent and phenotype problems below turned up on the way, and the
+organoid comparison came last.
 
 Short on time: [docs/overview.md](docs/overview.md) is the same findings with the
 figures and links to the notebook each one comes from.
 
 ## What came out of it
 
-**The published calls reproduce.** All 21 viral-load calls in the paper's Fig. 3A
-come back in the right direction — 14 reported hits at q < 0.05, 7 reported
-non-hits failing q < 0.1. The interferon panel (Fig. 5A) reproduces too, with all
-four novel hits at q < 0.01, with one correction: GPR89B on its own does not
-reproduce, only the GPR89A element and the dual-targeting one. `notebook/03`,
-`notebook/04`.
+All 21 viral-load calls in the paper's Fig. 3A come back in the right direction:
+14 reported hits at q < 0.05, and 7 reported non-hits that fail q < 0.1 here too.
+The interferon panel (Fig. 5A) reproduces as well, with the four novel hits at
+q < 0.01. One piece of it does not hold at the element level — GPR89B on its own
+shows nothing, and only the GPR89A element and the dual-targeting element carry
+the effect. `notebook/03`, `notebook/04`.
 
-**The FURIN element does not knock FURIN down** (+6% to −19% across the three
-elements carrying it, library median 88%), so the single-gene FURIN arm of the
-paper's protease-redundancy argument is an uninterpretable reagent rather than a
-negative result. MEPCE and LARP1 likewise. `notebook/02`.
+The elements carrying FURIN barely move it: +6% to −19%, against a library median
+of 88% knockdown. That matters because the paper's protease-redundancy argument
+treats the single-gene FURIN arm as a negative result, and a reagent that does
+not knock the gene down cannot carry that weight. MEPCE and LARP1 look the same.
+`notebook/02`.
 
-**Establishment and burden are different phenotypes.** The published single
-viral-load axis merges them. Separated: ACE2 and the TMPRSS2 combinations block
+Splitting the published viral-load ranking into two phenotypes — whether a cell
+gets infected at all, and how much virus it carries once it is — separates
+targets the single axis merges. ACE2 and the TMPRSS2 combinations block
 establishment so thoroughly that too few infected cells are left to estimate
-burden at all (12 for ACE2), while EXOC8 lowers burden with no effect on
-establishment (q = 0.02 against q = 0.94). TMPRSS2 and BRD2 move both.
-`notebook/03`.
+burden (12 cells for ACE2). EXOC8 moves burden with nothing on establishment
+(q = 0.02 against q = 0.94). TMPRSS2 and BRD2 move both. `notebook/03`.
 
-**Two elements per gene is not two independent reagents.** The 12 genes carried
-by separately cloned single-guide vectors agree at r = 0.55 on knockdown; pooling
-them with pairs that share guide design gives 0.74. `notebook/02`.
+Some genes appear in two elements, which I had taken for two independent
+reagents. For 12 of them that is true — separately cloned single-guide vectors —
+and those agree at r = 0.55 on knockdown. Pooling them with the pairs that share
+guide design gives 0.74, which is the flattering number.
+`notebook/02`.
 
-**Against the organoid signatures**, 17 elements separate from the control band
-on the drug signature and 14 of them are the interferon axis — KEAP1 (ρ = 0.52),
-IRF9 and IRF9+IRF3, STAT1, STAT2, TYK2, IFNAR1 and IFNAR2, GPR89A, SPNS1, BRD2 —
+On the organoid question: 17 elements separate from the control band on my drug
+signature, and 14 of them sit on the interferon axis — KEAP1 (ρ = 0.52), IRF9 and
+IRF9+IRF3, STAT1, STAT2, TYK2, IFNAR1 and IFNAR2, GPR89A, SPNS1, BRD2 —
 including all four of the paper's novel ISG regulators. PIP4K2C is not in this
-library, so nothing here validates that target; the autophagy-endolysosomal
-elements show no match (best q = 0.10), which is what you expect if the
-mechanism is post-transcriptional. `notebook/07`.
+library, so none of this speaks to that target directly, and the
+autophagy–endolysosomal elements show no match at all (best q = 0.10), which is
+what you would expect if that mechanism is post-transcriptional. `notebook/07`.
 
 ## Layout
 

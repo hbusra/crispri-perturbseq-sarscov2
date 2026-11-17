@@ -72,16 +72,30 @@ tests/      test_estimators.py — MH against statsmodels, NB recovery, null cal
 docs/       statistical_methods.md — estimands, nulls, testing families
 results/    tables/ (every number quoted above, numbered by the notebook that
             writes it) and figures/
+Snakefile   the whole thing as one graph: download, build, the eight notebooks
 ```
 
 ## Running it
 
 ```bash
 conda env create -f environment.yml && conda activate perturbseq-cov2
+snakemake --cores 4                             # download, build, run notebooks
+python -m pytest tests -q
+```
+
+The `Snakefile` wires the download, the build script and the eight notebooks into
+one graph whose edges are the tables each notebook actually reads, so
+`snakemake --cores 4 hit_calling` runs notebook 03 and only what it needs, and
+editing 03 re-runs 05, 06 and 08 because they read its hit table. `snakemake -n`
+says what would run; `snakemake --dag | dot -Tpng > dag.png` draws it. The
+notebooks execute in place, so the copies in the repository keep their outputs.
+
+To work through them by hand instead:
+
+```bash
 bash scripts/00_download.sh data/raw            # ~1.2 GB from GEO
 python scripts/01_build_anndata.py --raw data/raw --out data
 jupyter lab notebook/                           # run 01 through 08 in order
-python -m pytest tests -q
 ```
 
 `01_build_anndata.py` streams the 337-million-entry matrix and caches the result,

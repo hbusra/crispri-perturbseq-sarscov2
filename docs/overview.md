@@ -76,12 +76,17 @@ profile against my organoid contrasts at matched depth: 17 elements separate fro
 the control band on the drug signature, and 14 of them are the interferon axis —
 KEAP1 (ρ = 0.52), IRF9 and IRF9+IRF3, STAT1, STAT2, TYK2, IFNAR1 and IFNAR2,
 GPR89A, SPNS1, BRD2 — including all four of the paper's novel ISG regulators.
-Knocking down interferon signalling in Calu-3 cells moves them the way the drug
-moves infected organoids.
+So elements that knock down interferon signalling have bystander profiles
+resembling the drug signature from infected organoids. This is a rank correlation
+between two systems: it points at the interferon axis as a shared transcriptional
+response, and says nothing about how the drug acts.
 
 PIP4K2C is not in this library, so nothing here validates that target directly,
-and the autophagy–endolysosomal elements show no match (best q = 0.10) — what you
-would expect if that mechanism is post-transcriptional.
+and the autophagy–endolysosomal elements show no significant match (best
+q = 0.10 across the two axes, VAC14 at ρ = 0.22). Coverage is not the reason —
+those elements carry a median of 99 cells against a library median of 77 — so
+either the effect is small or it is something this transcriptional comparison
+cannot see.
 
 ![Library elements against the organoid signatures](../results/figures/organoid_signatures.png)
 

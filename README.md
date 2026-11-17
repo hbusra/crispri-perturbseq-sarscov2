@@ -48,8 +48,10 @@ signature, and 14 of them sit on the interferon axis — KEAP1 (ρ = 0.52), IRF9
 IRF9+IRF3, STAT1, STAT2, TYK2, IFNAR1 and IFNAR2, GPR89A, SPNS1, BRD2 —
 including all four of the paper's novel ISG regulators. PIP4K2C is not in this
 library, so none of this speaks to that target directly, and the
-autophagy–endolysosomal elements show no match at all (best q = 0.10), which is
-what you would expect if that mechanism is post-transcriptional. `notebook/07`.
+autophagy–endolysosomal elements show no significant match (best q = 0.10, the
+strongest being VAC14 at ρ = 0.22). Thin coverage is not the explanation, so
+either the effect is small or it is something a transcriptional comparison cannot
+see. `notebook/07`.
 
 ## Layout
 

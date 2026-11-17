@@ -10,6 +10,9 @@ Three things, in order: reproduce the published calls, test the ones that do not
 hold up, and use the perturbation data against signatures from my own
 SARS-CoV-2 lung organoid work.
 
+Short on time: [docs/overview.md](docs/overview.md) is the same findings with the
+figures and links to the notebook each one comes from.
+
 ## What came out of it
 
 **The published calls reproduce.** All 21 viral-load calls in the paper's Fig. 3A

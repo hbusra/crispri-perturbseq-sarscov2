@@ -8,7 +8,7 @@ Inputs  (from scripts/00_download.sh)
 Output
     <OUT>/perturbseq.h5ad
     <OUT>/X_kept.npz                 cached subset matrix, so reruns are fast
-    results/tables/01_build_summary.tsv
+    results/tables/00_build_summary.tsv
 
 Design notes
 ------------
@@ -259,7 +259,7 @@ def main() -> None:
         ],
         columns=["metric", "value"],
     )
-    summary.to_csv(tables / "01_build_summary.tsv", sep="\t", index=False)
+    summary.to_csv(tables / "00_build_summary.tsv", sep="\t", index=False)
     print(summary.to_string(index=False))
 
     dest = out / "perturbseq.h5ad"

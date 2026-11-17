@@ -16,3 +16,8 @@ env/
 .DS_Store
 
 .pytest_cache/
+
+# snakemake
+.snakemake/
+logs/
+dag.png

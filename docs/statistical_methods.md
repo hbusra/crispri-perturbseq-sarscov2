@@ -1,6 +1,6 @@
 # Statistical methods
 
-Notes on what each number is, how its p-value was built, and what it does not cover.
+My notes on what each number is, how its p-value was built, and what it does not cover.
 
 ---
 
@@ -36,16 +36,15 @@ them (`results/tables/02_construct_concordance.tsv`):
 | single vs combination | 24 | a single-gene element and a two-gene element containing it, which share guide design for the shared gene | r = 0.55, ρ = 0.20 |
 | three or more elements | 5 | genes appearing in several elements | r = 0.98 |
 
-**The reproducibility figure this repository quotes is r = 0.55 on the 12-gene
-independent-vector panel.** Pooling all 41 multi-element genes into one correlation
-gives r = 0.74, but that number is inflated by the third category and mixes
-reagent-to-reagent comparison with measuring one reagent twice. It should not be
-reported as construct reproducibility, and earlier drafts of this repository did so
-in error.
+The reproducibility figure I quote is r = 0.55, on the 12-gene independent-vector
+panel. Pooling all 41 multi-element genes into one correlation gives r = 0.74, but
+that number is inflated by the third category and mixes reagent-to-reagent
+comparison with measuring one reagent twice, so it should not be reported as
+construct reproducibility.
 
 Twelve genes is a small panel, and the honest reading of r = 0.55 with a median
-absolute difference of 15 percentage points is that **knockdown efficiency varies
-materially between independently cloned guides against the same gene**. That is a
+absolute difference of 15 percentage points is that knockdown efficiency varies
+materially between independently cloned guides against the same gene. That is a
 reason to treat the element-level results as the primary ones.
 
 ## 2. Blocking: the 10x channel
@@ -85,7 +84,7 @@ excluded. They are exactly the cells whose call would be depth-sensitive.
 
 ### 3b. Viral burden given infection
 
-**Estimand — stated precisely, because the denominator is not neutral.** Viral UMIs
+**Estimand.** Viral UMIs
 per **host transcript captured**, among infected cells. This is *not* absolute viral
 RNA abundance per cell. Host UMI is itself lowered by infection (host shutoff cuts
 median host UMIs roughly elevenfold) and could in principle be moved by a
@@ -122,7 +121,7 @@ overlap of the 20 most negative elements:
 The first alternative is the informative one: a capture proxy that saturates
 differently from UMI count gives essentially the same answer, so the result is not
 an artefact of how host capture is measured. The depth-band row is weak evidence in
-either direction and is reported rather than hidden: restricting to a two-fold band
+either direction: restricting to a two-fold band
 keeps 3,126 of 8,136 infected cells and only 289 non-targeting ones, so roughly half
 the elements become unfittable and the rest are estimated on a fraction of the data.
 So this row is mostly a power problem; it is not evidence against the primary fit.
@@ -144,8 +143,7 @@ difference against the non-targeting cells of the same lane.
 **The self-containment correction.** Twelve of the 55 ISGs are themselves CRISPRi
 targets in this library (BST2, DDX58, EIF2AK2, IFIH1, IFITM1/2/3, IRF9, ISG15, LY6E,
 STAT1, STAT2). Knocking one down mechanically lowers any score containing it. Every
-result is reported with and without them; the repository quotes the target-free
-version.
+result is reported with and without them, and I quote the target-free version.
 
 ## 4. The null — what it is, exactly
 
@@ -153,10 +151,9 @@ A Wald p-value from any model above assumes cells are independent. They are not
 (§1). Significance therefore comes from a **control-based null** built from the 22
 non-targeting elements.
 
-No labels are shuffled anywhere in this. The procedure builds synthetic null
-elements out of control cells. Earlier drafts of this repository called it a
-"permutation null", which was the wrong name, so the columns are now
-`p_null` / `q_null`.
+No labels are shuffled anywhere in this: the procedure builds synthetic null
+elements out of control cells, which is why the columns are `p_null` / `q_null`
+rather than `p_perm` / `q_perm`.
 
 Two constructions are used, because the two statistics need different ones:
 
@@ -242,7 +239,7 @@ about those targets.
 
 ## 7. What this design cannot support
 
-Things this repository does not claim, and why:
+What I don't claim from this, and why:
 
 - **Biological reproducibility.** The eight channels are 10x lanes from one
   infection experiment. The null controls cell- and lane-level sampling noise.

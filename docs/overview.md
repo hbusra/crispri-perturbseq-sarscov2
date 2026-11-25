@@ -1,4 +1,4 @@
-# Two-minute overview
+# Overview
 
 A reanalysis of the Calu-3 CRISPRi Perturb-seq screen of SARS-CoV-2 host factors
 ([Sunshine et al., *Nat Commun* 14, 2023](https://doi.org/10.1038/s41467-023-41788-4),

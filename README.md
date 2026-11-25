@@ -1,5 +1,7 @@
 # crispri-perturbseq-sarscov2
 
+[![tests](https://github.com/hbusra/crispri-perturbseq-sarscov2/actions/workflows/tests.yml/badge.svg)](https://github.com/hbusra/crispri-perturbseq-sarscov2/actions/workflows/tests.yml)
+
 Reanalysis of the Calu-3 CRISPRi Perturb-seq screen of SARS-CoV-2 host factors
 from Sunshine et al., *Nat Commun* 14 (2023), GEO
 [GSE208240](https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE208240),
